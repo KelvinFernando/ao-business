@@ -19,13 +19,10 @@ const rive = await page.locator('.prototype-badge').evaluate(element => ({ box: 
 const product = await page.locator('.selected-product').evaluate(element => {
   const row = element.querySelector('.selected-product-row')
   const copy = element.querySelector('.selected-product-copy')
-  const secure = document.querySelector('.secure-space')
   return {
     height: element.getBoundingClientRect().height,
     rowAlign: getComputedStyle(row).alignItems,
     copyGap: getComputedStyle(copy).gap,
-    secureJustify: getComputedStyle(secure).justifyContent,
-    secureGap: getComputedStyle(secure).gap,
   }
 })
 for (const route of ['02-0-start', '02-1-prequal', '03-1-prepare', '04-1-business-details', '10-1-status-waiting-signer', '11-2-verify-code']) {

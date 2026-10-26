@@ -143,8 +143,6 @@ legend { padding: 0; }
 .error-summary ul { padding-left: 20px; color: var(--color-error); }
 .error-summary a { color: var(--color-error); }
 .secure-notice { background: var(--color-grey075); border-radius: 4px; padding: 16px; display: flex; align-items: flex-start; gap: 12px; }
-.secure-space { display: flex; justify-content: flex-start; align-items: center; gap: 12px; color: var(--color-text-muted); font-size: 14px; line-height: 20px; }
-.secure-space svg { width: 24px; height: 24px; flex: 0 0 24px; color: #0A2240; }
 .screen-02-5-about-you > .card:not(.privacy-consent) .field { gap: 6px; }
 .screen-02-5-about-you > .card:not(.privacy-consent) .field-label { font-size: 14px; line-height: 20px; }
 .screen-02-5-about-you > .card:not(.privacy-consent) .input { min-height: 48px; padding: 8px 16px; border-color: var(--color-border); }
