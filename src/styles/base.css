@@ -258,6 +258,8 @@ legend { padding: 0; }
 .form-row { display: flex; gap: 24px; align-items: flex-start; }
 .form-row > * { flex: 1; }
 .form-row > .fixed { flex: 0 0 auto; }
+.registration-fields { align-items: stretch; }
+.registration-fields > .field > :last-child { margin-top: auto; }
 .counter { text-align: right; color: var(--color-text-muted); font-size: 12px; }
 .date-row { display: flex; gap: 8px; align-items: flex-end; }
 .date-part { display: flex; flex-direction: column; gap: 4px; }
@@ -417,6 +419,7 @@ legend { padding: 0; }
 .screen-09-4-submitted .card:has(.help-contact), .screen-11-8-signer-done .card:has(.help-contact) { font-size: 14px; line-height: 20px; }
 .help-contact strong, .help-contact .link { font-size: 14px; line-height: 20px; font-weight: 600; }
 .inline-disclosure { border: 0; background: none; padding: 0; color: var(--color-primary); display: inline-flex; align-items: center; gap: 8px; font-weight: 500; }
+.inline-disclosure[aria-expanded='true'] svg { transform: rotate(180deg); }
 
 .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .data-table th { padding: 12px 16px; background: var(--color-grey050); text-align: left; font-weight: 700; }
@@ -822,9 +825,16 @@ legend { padding: 0; }
 .prototype-bar { z-index: 9999; bottom: 24px; left: 50%; transform: translateX(-50%); min-height: 56px; max-width: calc(100vw - 48px); padding: 8px; border-radius: 999px; display: flex; align-items: center; gap: 6px; }
 .prototype-bar.glass { background: linear-gradient(135deg,rgba(255,255,255,.46),rgba(255,255,255,.20)); -webkit-backdrop-filter: blur(32px) saturate(195%) contrast(1.06); backdrop-filter: blur(32px) saturate(195%) contrast(1.06); border-color: rgba(255,255,255,.58); box-shadow: 0 16px 44px rgba(0,49,77,.16),0 3px 10px rgba(0,49,77,.08),inset 0 1px 0 rgba(255,255,255,.78),inset 0 -1px 0 rgba(255,255,255,.18); }
 .prototype-bar.dragging { transition: none; }
-.prototype-badge { position: absolute; right: -58px; bottom: calc(100% + 2px); width: 160px; height: 100px; pointer-events: none; filter: drop-shadow(0 5px 8px rgba(0,49,77,.10)); transform-origin: 72% 100%; animation: prototype-badge-exit 2s ease-in-out 28s forwards; }
+.prototype-badge { position: absolute; right: -58px; bottom: calc(100% + 2px); width: 160px; height: 100px; pointer-events: none; filter: drop-shadow(0 5px 8px rgba(0,49,77,.10)); transform-origin: 72% 100%; animation: prototype-badge-exit 2s ease-in-out 28s forwards; transition: filter .14s ease-out; }
+.prototype-badge-drag { width: 100%; height: 100%; transform-origin: 50% 85%; }
 .prototype-badge-travel { width: 100%; height: 100%; animation: prototype-badge-travel 10s ease-in-out infinite alternate; }
-.prototype-badge-button { display: block; width: 100%; height: 100%; padding: 0; border: 0; border-radius: 8px; background: transparent; pointer-events: auto; cursor: pointer; }
+.prototype-badge.is-interacted, .prototype-badge.is-interacted .prototype-badge-travel { animation-play-state: paused; }
+.prototype-badge.is-dragging, .prototype-badge.is-returning, .prototype-badge.is-falling { z-index: 10000; }
+.prototype-badge.is-dragging { filter: drop-shadow(0 14px 12px rgba(0,49,77,.18)); }
+.prototype-badge.is-dragging .prototype-badge-drag, .prototype-badge.is-returning .prototype-badge-drag, .prototype-badge.is-falling .prototype-badge-drag { will-change: transform, opacity; }
+.prototype-badge-button { display: block; width: 100%; height: 100%; padding: 0; border: 0; border-radius: 8px; background: transparent; pointer-events: auto; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+.prototype-badge.is-dragging .prototype-badge-button { cursor: grabbing; }
+.prototype-badge.is-returning .prototype-badge-button, .prototype-badge.is-falling .prototype-badge-button { pointer-events: none; }
 .prototype-badge-button:focus-visible { box-shadow: var(--focus-ring); }
 .prototype-badge canvas { display: block; width: 100% !important; height: 100% !important; }
 @keyframes prototype-badge-travel { from { transform: translateX(-260px); } to { transform: translateX(0); } }
