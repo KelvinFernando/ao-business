@@ -12,10 +12,10 @@ const signerLabels = ['Consent','Your information','Your identity','Agreement']
 const signerRoutes = ['11-4-signer-consent','11-5-signer-personal-info','11-6-signer-identity','11-7-signer-agreement']
 
 function Header({ save, language, bordered = true }: { save: boolean; language: boolean; bordered?: boolean }) {
-  const { setOverlay, saveExit, state, showToast } = useApp()
+  const { setOverlay, saveExit, go, showToast } = useApp()
   const french = () => showToast('French version not included in this prototype')
   return <header className={`site-header ${bordered ? 'bordered' : ''}`}>
-    <a className="brand" href="https://www.nbc.ca/en/business/accounts.html" aria-label="National Bank home" onClick={(event) => { if (state.dirty) { event.preventDefault(); setOverlay('leave') } }}><img src={logo} alt="National Bank"/></a>
+    <a className="brand" href="#/02-0-start?v=default" aria-label="National Bank prototype home" onClick={(event) => { event.preventDefault(); go('02-0-start') }}><img src={logo} alt="National Bank"/></a>
     <div className="header-actions"><div className="help-group"><Phone size={18}/><button className="link help-link" onClick={() => setOverlay('help')}>Need help? Talk to a business advisor</button><a className="phone-link" href="tel:+1888XXXXXXX">1 888 XXX-XXXX</a></div>{language && <><span className="vertical-divider"/><button className="language-button" lang="fr" onClick={french}>Français</button></>}{save && <><span className="vertical-divider"/><button className="link save-header" onClick={saveExit}>Save and finish later</button></>}</div>
   </header>
 }
