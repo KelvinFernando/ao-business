@@ -143,8 +143,6 @@ legend { padding: 0; }
 .error-summary ul { padding-left: 20px; color: var(--color-error); }
 .error-summary a { color: var(--color-error); }
 .secure-notice { background: var(--color-grey075); border-radius: 4px; padding: 16px; display: flex; align-items: flex-start; gap: 12px; }
-.secure-space { display: flex; justify-content: flex-start; align-items: center; gap: 12px; color: var(--color-text-muted); font-size: 14px; line-height: 20px; }
-.secure-space svg { width: 24px; height: 24px; flex: 0 0 24px; color: #0A2240; }
 .screen-02-5-about-you > .card:not(.privacy-consent) .field { gap: 6px; }
 .screen-02-5-about-you > .card:not(.privacy-consent) .field-label { font-size: 14px; line-height: 20px; }
 .screen-02-5-about-you > .card:not(.privacy-consent) .input { min-height: 48px; padding: 8px 16px; border-color: var(--color-border); }
@@ -307,8 +305,8 @@ legend { padding: 0; }
 .checkbox-row input:checked + .checkbox-box { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-white); }
 .checkbox-row input:focus-visible + .checkbox-box, .radio-row input:focus-visible + .radio-dot { box-shadow: var(--focus-ring); }
 .radio-dot { width: 20px; height: 20px; flex: 0 0 20px; border: 2px solid var(--color-grey500); border-radius: 50%; display: grid; place-items: center; background: var(--color-white); }
-.radio-row input:checked + .radio-dot, .choice-tile input:checked + .radio-dot, .package-row input:checked + .radio-dot { border-color: var(--color-primary); }
-.radio-row input:checked + .radio-dot::after, .choice-tile input:checked + .radio-dot::after, .package-row input:checked + .radio-dot::after { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--color-primary); }
+.radio-row input:checked + .radio-dot, .choice-tile:has(input:checked) .radio-dot, .package-row input:checked + .radio-dot { border-color: var(--color-primary); }
+.radio-row input:checked + .radio-dot::after, .choice-tile:has(input:checked) .radio-dot::after, .package-row input:checked + .radio-dot::after { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--color-primary); }
 .boxed-check { padding: 16px; background: var(--color-grey050); border-radius: 8px; }
 .choice-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
 .choice-grid.four { grid-template-columns: repeat(4,minmax(0,1fr)); }
