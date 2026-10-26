@@ -100,6 +100,10 @@ export function RadioRow({ name, value, checked, onChange, label }: { name: stri
   return <label className="radio-row" htmlFor={id}><input id={id} type="radio" name={name} value={value} checked={checked} onChange={() => onChange(value)}/><span className="radio-dot"/><span>{label}</span></label>
 }
 
+function ChoiceCheck() {
+  return <svg width="12" height="10" viewBox="0 0 12 10" aria-hidden="true"><path d="M1 5l3.5 3.5L11 1.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+}
+
 export function ChoiceTiles({ name, value, onChange, options, columns = 2, type = 'radio', disabledOptions = [] }: { name: string; value: string | string[]; onChange: (value: string) => void; options: (string | { label: string; description?: string; value?: string })[]; columns?: 1 | 2 | 3 | 4; type?: 'radio' | 'checkbox'; disabledOptions?: string[] }) {
   const groupId = useId()
   return <div className={`choice-grid ${columns === 4 ? 'four' : columns === 3 ? 'three' : columns === 1 ? 'single' : ''}`} role={type === 'radio' ? 'radiogroup' : 'group'} aria-label={name}>
@@ -110,7 +114,7 @@ export function ChoiceTiles({ name, value, onChange, options, columns = 2, type 
       const id = `${groupId}-${index}`
       return <label key={option.value} className={`choice-tile ${disabled ? 'disabled' : ''}`} htmlFor={id}>
         <input id={id} type={type} name={name} value={option.value} checked={checked} disabled={disabled} onChange={() => onChange(option.value)}/>
-        {option.description ? <><span className="choice-tile-title">{type === 'radio' ? <span className="radio-dot"/> : <span className="checkbox-box"><Check size={15}/></span>}<span className="choice-title">{option.label}</span></span><span className="choice-description">{option.description}</span></> : <>{type === 'radio' ? <span className="radio-dot"/> : <span className="checkbox-box"><Check size={15}/></span>}<span className="stack-sm" style={{gap:4}}><span className="choice-title">{option.label}</span></span></>}
+        {option.description ? <><span className="choice-tile-title">{type === 'radio' ? <span className="radio-dot"/> : <span className="checkbox-box"><ChoiceCheck/></span>}<span className="choice-title">{option.label}</span></span><span className="choice-description">{option.description}</span></> : <>{type === 'radio' ? <span className="radio-dot"/> : <span className="checkbox-box"><ChoiceCheck/></span>}<span className="stack-sm" style={{gap:4}}><span className="choice-title">{option.label}</span></span></>}
       </label>
     })}
   </div>
