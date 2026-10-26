@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, type ChangeEvent, type ReactNode } from 'react'
-import { AlertCircle, Check, CircleAlert, CircleCheck, Clock3, CloudUpload, FileText, Info, LoaderCircle, LockKeyhole, Minus, Plus, Save, TriangleAlert, X } from 'lucide-react'
+import { AlertCircle, Check, CircleAlert, CircleCheck, Clock3, CloudUpload, FileText, Info, LoaderCircle, Minus, Plus, Save, TriangleAlert, X } from 'lucide-react'
 import { useApp } from '../state/AppState'
 
 export function Button({ children, variant = 'primary', small = false, className = '', ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary'; small?: boolean }) {
@@ -134,10 +134,6 @@ export function DateField({ label, day, month, year, onDay, onMonth, onYear, yea
 export function ActionBar({ back, continueLabel = 'Continue', onContinue, save = true, hideBack = false, backLabel = 'Back', continueVariant = 'primary', busy = false }: { back?: string | (() => void); continueLabel?: string; onContinue?: () => void; save?: boolean; hideBack?: boolean; backLabel?: string; continueVariant?: 'primary' | 'secondary'; busy?: boolean }) {
   const { go, saveExit } = useApp()
   return <div className="action-bar"><div>{!hideBack && back && <Button variant="secondary" onClick={() => typeof back === 'string' ? go(back) : back()}>{backLabel}</Button>}</div><div className="action-group">{save && <button type="button" className="save-link" onClick={saveExit}><Save size={16}/>Save and finish later</button>}{onContinue && <Button variant={continueVariant} onClick={onContinue} disabled={busy} aria-busy={busy}>{busy && <LoaderCircle className="spinner" size={20}/>} {busy ? 'Saving…' : continueLabel}</Button>}</div></div>
-}
-
-export function SecureSpace({ children = 'Secure space' }: { children?: ReactNode }) {
-  return <div className="secure-space"><LockKeyhole size={24}/><span>{children}</span></div>
 }
 
 export function OtpInput({ value, onChange, error, label = 'Verification code' }: { value: string; onChange: (value: string) => void; error?: string; label?: string }) {
