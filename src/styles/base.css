@@ -840,7 +840,6 @@ legend { padding: 0; }
 .prototype-screen.current { border-left-color: var(--color-primary); background: var(--color-primary-tint); }
 .prototype-screen .code { color: var(--color-text-muted); min-width: 38px; }
 .prototype-utilities { border-top: 1px solid rgba(183,185,190,.6); padding-top: 12px; display: flex; flex-wrap: wrap; gap: 4px; }
-.prototype-hidden { z-index: 9999; right: 24px; bottom: 24px; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; }
 .prototype-actions { padding: 8px; border-radius: 12px; background: rgba(255,255,255,.36); display: flex; flex-direction: column; gap: 8px; }
 .prototype-action-row { display: flex; flex-wrap: wrap; gap: 4px; }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .glass { background: rgba(255,255,255,.96); } }
