@@ -28,11 +28,27 @@ const product = await page.locator('.selected-product').evaluate(element => {
     secureGap: getComputedStyle(secure).gap,
   }
 })
-for (const route of ['02-0-start', '03-1-prepare', '04-1-business-details', '10-1-status-waiting-signer', '11-2-verify-code']) {
+for (const route of ['02-0-start', '02-1-prequal', '03-1-prepare', '04-1-business-details', '10-1-status-waiting-signer', '11-2-verify-code']) {
   await page.goto(`http://127.0.0.1:4174/#/${route}?clean=1`)
   await page.waitForTimeout(250)
   await page.screenshot({ path: `${root}validation/audit/${route}.png`, fullPage: true })
 }
-console.log(JSON.stringify({ rive, product, errors: [...new Set(errors)] }, null, 2))
+await page.goto('http://127.0.0.1:4174/#/02-1-prequal?clean=1')
+const selectedRadio = await page.locator('.choice-tile:has(input:checked)').first().evaluate(element => {
+  const dot = element.querySelector('.radio-dot')
+  const tileStyle = getComputedStyle(element)
+  const dotStyle = getComputedStyle(dot)
+  const centreStyle = getComputedStyle(dot, '::after')
+  return {
+    tileBackground: tileStyle.backgroundColor,
+    tileBorder: tileStyle.borderColor,
+    dotSize: [dotStyle.width, dotStyle.height],
+    dotBackground: dotStyle.backgroundColor,
+    dotBorder: dotStyle.borderColor,
+    centreSize: [centreStyle.width, centreStyle.height],
+    centreBackground: centreStyle.backgroundColor,
+  }
+})
+console.log(JSON.stringify({ rive, product, selectedRadio, errors: [...new Set(errors)] }, null, 2))
 await browser.close()
 await server.close()
