@@ -40,8 +40,8 @@ export function ScreenRenderer({ screen }: { screen: ScreenDef }) {
     case '06-5-idv-try-again': return <IdvRetryScreen/>
     case '06-6-idv-another-way': return <IdvAnotherWayScreen/>
     case '07-1-tax-residency': return <TaxResidencyScreen/>
-    case '07-2-declarations': return <DeclarationsScreen/>
-    case '07-3-declarations-error': return <DeclarationsScreen error/>
+    case '07-2-declarations': return <DeclarationsScreen key="default"/>
+    case '07-3-declarations-error': return <DeclarationsScreen key="error" error/>
     case '07-4-purpose-funds': return <PurposeFundsScreen/>
     case '08-1-needs': return <NeedsScreen/>
     case '08-1b-use-case-opener': return <NeedsScreen concept/>
@@ -52,7 +52,7 @@ export function ScreenRenderer({ screen }: { screen: ScreenDef }) {
     case '09-2-edit-business': return <EditBusinessScreen/>
     case '09-3-review-dependency': return <ReviewScreen dependency/>
     case '09-6-agreement': return <AgreementForm/>
-    case '09-5-submit-failed': return <AgreementForm failed/>
+    case '09-5-submit-failed': return <ReviewScreen dependency failed/>
     case '09-4-submitted': return <SubmittedScreen/>
     case '10-1-status-waiting-signer': return <WaitingStatusScreen/>
     case '10-1b-reminder-sent': return <WaitingStatusScreen reminder/>

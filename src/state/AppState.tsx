@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 export type Overlay = 'help' | 'leave' | 'why' | 'remove-person' | null
@@ -19,21 +19,21 @@ const initialData: Record<string, unknown> = {
   operatesInCanada: 'Yes', businessPurpose: 'Yes', onBehalf: 'No',
   legalBusinessName: 'Boulangerie Laval inc.', firstName: 'Marie', lastName: 'Tremblay', email: 'marie@boulangerielaval.ca', mobile: '(514) 555-4821',
   privacyConsent: true, accountLanguage: 'English', smsCredentials: false, phoneCode: '',
-  consents: [false, false, false, false, false], signerConsents: [false, false, false],
+  consents: [true, false, false, false, false], signerConsents: [true, false, false],
   operatingName: 'Boulangerie Laval', businessPhone: '(450) 555-0137', website: 'boulangerielaval.ca', province: 'Quebec', neq: '1170 123 456', bn: '',
   operatingSixMonths: 'Yes', businessAddress: '1250 boul Saint-Mar', unit: '', mailingSame: 'Yes', ownLease: 'Lease',
   street: '1250 boul. Saint-Martin O', city: 'Laval', postal: 'H7S 1M', description: 'Artisan bakery in Laval. We bake bread and pastries on site and sell them in our shop, with a small café counter.',
   industry: 'Bakery that sells to the public', otherActivities: 'Yes', mainPercent: 80, otherPercent: 20, employees: 6, revenue: '$250,000 to $499,999',
   lucFirstName: 'Luc', lucLastName: 'Gagnon', lucEmail: 'luc@boulangerielaval.ca', lucMobile: '(514) 555-0182', lucTitle: 'Vice-president', lucOwner: true, lucSigner: true, lucPercent: 25,
   openingSigners: 'One signer', daySigners: 'Two signers', loanSigners: 'One signer',
-  dobDay: '14', dobMonth: '03', dobYear: '1984', homeAddress: '4820 rue Fabre, Montréal, QC H2J 3V8', homeMailingSame: 'Yes', occupation: 'Business owner', employment: 'Self-employed', sin: '123 456 482', preferredLanguage: 'English',
+  dobDay: '14', dobMonth: 'March', dobYear: '1984', homeAddress: '4820 rue Fabre, Montréal, QC H2J 3V8', homeMailingSame: 'Yes', occupation: 'Business owner', employment: 'Self-employed', sin: '123 456 482', preferredLanguage: 'English',
   otherTaxCountry: 'Yes', taxCountry: 'France', countryTin: '12 345 678 901', noCountryTin: false, usTin: 'No', thirdParty: 'No', pep: undefined,
   employeesToPay: '6 to 20', payFrequency: 'Every 2 weeks', payrollManager: 'My accountant', payrollOptIn: true,
   international: ['Pay suppliers abroad','Buy or sell foreign currency'], suppliers: ['Interac e-Transfer','Electronic funds transfer (EFT)'], projects: ['Equipment'],
   partnerPayments: false, partnerPayroll: false, requestCall: false,
   agreementChecks: [false,false,false], signature: '', signerAgreementChecks: [false,false,false], signerSignature: '',
-  signerFirstName: 'Luc', signerLastName: 'Gagnon', signerDobDay: '', signerDobMonth: '', signerDobYear: '', signerMobile: '', signerOccupation: '', signerEmployment: 'Employed', signerConfirm: false,
-  fraudReport: false, dependencyAnswered: false,
+  signerFirstName: 'Luc', signerLastName: 'Gagnon', signerDobDay: '14', signerDobMonth: 'March', signerDobYear: '1984', signerMobile: '(514) 555-0182', signerOccupation: 'Business owner', signerEmployment: 'Employed', signerHomeAddress: '4820 rue Fabre, Montréal, QC H2J 3V8', signerConfirm: false,
+  fraudReport: false, dependencyAnswered: false, accountUses: ['Daily operations','Paying suppliers','Receiving customer payments','Cash deposits'], fundSources: ['Business revenue','Other'],
 }
 
 const freshState = (): DemoState => ({
@@ -56,6 +56,7 @@ interface AppContextValue {
   go: (route: string, variant?: string) => void
   saveExit: () => void
   markSaved: () => void
+  discardChanges: () => void
   reset: () => void
   overlay: Overlay
   setOverlay: (overlay: Overlay) => void
@@ -69,6 +70,7 @@ const AppContext = createContext<AppContextValue | null>(null)
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<DemoState>(loadState)
+  const checkpoint = useRef<DemoState>(state)
   const [overlay, setOverlay] = useState<Overlay>(null)
   const [toast, setToast] = useState('')
   const navigate = useNavigate()
@@ -87,11 +89,23 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   }, [persist])
 
   const markSaved = useCallback(() => {
-    setState((previous) => persist({ ...previous, dirty: false, lastSavedAt: new Date().toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit', hour12: false }) }))
+    setState((previous) => {
+      const next = { ...previous, dirty: false, lastSavedAt: new Date().toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit', hour12: false }) }
+      checkpoint.current = next
+      return persist(next)
+    })
+  }, [persist])
+
+  const discardChanges = useCallback(() => {
+    setState(() => persist({ ...checkpoint.current, dirty: false }))
   }, [persist])
 
   const go = useCallback((route: string, variant = 'default') => {
-    setState((previous) => persist({ ...previous, dirty: false, lastSavedAt: new Date().toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit', hour12: false }) }))
+    setState((previous) => {
+      const next = { ...previous, dirty: false, lastSavedAt: new Date().toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit', hour12: false }) }
+      checkpoint.current = next
+      return persist(next)
+    })
     setOverlay(null)
     navigate(`/${route}?v=${variant}`)
     window.scrollTo(0, 0)
@@ -105,6 +119,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const reset = useCallback(() => {
     const next = freshState()
     sessionStorage.removeItem('dco-demo-state-v1')
+    checkpoint.current = next
     setState(next)
     setOverlay(null)
     navigate('/02-0-start?v=default')
@@ -118,7 +133,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const setSubmitFailNext = useCallback((value: boolean) => setState((previous) => persist({ ...previous, submitFailNext: value })), [persist])
   const setIdvResult = useCallback((value: IdvResult) => setState((previous) => persist({ ...previous, idvResult: value })), [persist])
 
-  const value = useMemo(() => ({ state, set, setPackage, go, saveExit, markSaved, reset, overlay, setOverlay, toast, showToast, setSubmitFailNext, setIdvResult }), [state, set, setPackage, go, saveExit, markSaved, reset, overlay, toast, showToast, setSubmitFailNext, setIdvResult])
+  const value = useMemo(() => ({ state, set, setPackage, go, saveExit, markSaved, discardChanges, reset, overlay, setOverlay, toast, showToast, setSubmitFailNext, setIdvResult }), [state, set, setPackage, go, saveExit, markSaved, discardChanges, reset, overlay, toast, showToast, setSubmitFailNext, setIdvResult])
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
 }
 
