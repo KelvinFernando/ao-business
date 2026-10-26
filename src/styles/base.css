@@ -302,7 +302,7 @@ legend { padding: 0; }
 .checkbox-row, .radio-row { display: flex; align-items: flex-start; gap: 12px; min-height: 44px; cursor: pointer; }
 .checkbox-row input, .radio-row input { position: absolute; opacity: 0; pointer-events: none; }
 .checkbox-box { width: 24px; height: 24px; flex: 0 0 24px; border: 1px solid var(--color-grey500); border-radius: 4px; display: grid; place-items: center; background: var(--color-white); color: transparent; margin-top: 1px; }
-.checkbox-row input:checked + .checkbox-box { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-white); }
+.checkbox-row input:checked + .checkbox-box, .choice-tile:has(input:checked) .checkbox-box { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-white); }
 .checkbox-row input:focus-visible + .checkbox-box, .radio-row input:focus-visible + .radio-dot { box-shadow: var(--focus-ring); }
 .radio-dot { width: 20px; height: 20px; flex: 0 0 20px; border: 2px solid var(--color-grey500); border-radius: 50%; display: grid; place-items: center; background: var(--color-white); }
 .radio-row input:checked + .radio-dot, .choice-tile:has(input:checked) .radio-dot, .package-row input:checked + .radio-dot { border-color: var(--color-primary); }
@@ -313,6 +313,7 @@ legend { padding: 0; }
 .choice-grid.single { grid-template-columns: minmax(0,1fr); }
 .choice-grid.three { grid-template-columns: repeat(3,minmax(0,1fr)); }
 .choice-tile { position: relative; display: flex; align-items: flex-start; gap: 10px; min-height: 48px; padding: 14px 16px; background: var(--color-white); border: 1px solid var(--color-grey500); border-radius: 4px; cursor: pointer; }
+.choice-tile .checkbox-box { width: 20px; height: 20px; flex-basis: 20px; border-width: 2px; border-radius: 3px; margin-top: 0; }
 .choice-tile:has(input:checked) { border: 2px solid var(--color-primary); padding: 13px 15px; background: var(--color-primary-tint); }
 .choice-tile:has(input:checked) .choice-title { font-weight: 500; }
 .choice-tile input { position: absolute; opacity: 0; }
