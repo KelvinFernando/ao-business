@@ -116,7 +116,8 @@ const freshState = (): DemoState => ({
 const applicationSections: Exclude<SectionId, 'before' | 'review'>[] = ['business', 'package', 'people', 'you_id', 'tax']
 
 export function createDemoPreset(preset: DemoPreset): DemoState {
-  const base = freshState()
+  const initial = freshState()
+  const base = { ...initial, data: { ...initial.data, consents: [true, true, true, true, true] } }
   const beforeComplete = sectionStates({ before: { status: 'complete' } })
   if (preset === 'fresh') return { ...base, sections: beforeComplete }
 

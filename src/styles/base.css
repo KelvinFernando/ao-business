@@ -211,6 +211,14 @@ button.rail-label:hover { color: var(--color-primary); }
 .next-steps .check-list { gap: 0; color: var(--color-black); font-size: 14px; line-height: 21px; }
 .next-steps .check-list li { padding: 4px 0; }
 .next-steps .check-list li svg { margin-top: 2px; }
+.before-section-list { display: flex; flex-direction: column; }
+.before-section-row { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 16px 0; border-bottom: 1px solid var(--color-divider); }
+.before-section-row:first-child { padding-top: 0; }
+.before-section-row:last-child { padding-bottom: 0; border-bottom: 0; }
+.before-section-row > span { flex-shrink: 0; }
+.ready-list { padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+.consent-intro { display: flex; flex-direction: column; gap: 8px; }
+.legal-placeholder { border: 1px dashed var(--color-grey500); }
 .signer-invitation .alert { gap: 16px; padding: 20px 24px; border-radius: 8px; background: var(--color-grey050); }
 .signer-invitation .alert-body { font-size: 16px; line-height: 24px; }
 .screen-02-2-eligible > .icon-circle.large { width: 64px; height: 64px; flex-basis: 64px; }

@@ -41,6 +41,7 @@ function ApplicationRail({ screen }: { screen: ScreenDef }) {
   const currentSection = sectionForScreen(screen.id)
   const currentPart = partForScreen(screen.id, currentSection)
   const before = sectionStatus(state, 'before')
+  const beforeDisplay = currentSection === 'before' && before.status !== 'complete' ? { ...before, status: 'in_progress' as const, reason: 'part 4 of 4' } : before
   const review = sectionStatus(state, 'review')
   const reasonFor = (section: ApplicationSectionId, current: SectionState) => {
     if (current.status === 'complete' && section === 'package') return `${packageName(chosenPackage(state))} Package`
@@ -51,12 +52,12 @@ function ApplicationRail({ screen }: { screen: ScreenDef }) {
   return <>
     <button type="button" className={`overview-home ${screen.id === '01-0-overview' ? 'current' : ''}`} aria-current={screen.id === '01-0-overview' ? 'page' : undefined} onClick={() => go('01-0-overview')}><Home size={20}/>Application overview</button>
     <nav className="section-rail" aria-label="Application sections"><ol className="section-rail-list">
-      <RailItem label="Before you apply" status={before.status} reason={before.reason} current={currentSection === 'before'} connector onClick={() => go('03-2-consent')}/>
-      <li className="rail-group-label">YOUR APPLICATION · ANY ORDER</li>
+      <RailItem label="Before you apply" status={beforeDisplay.status} reason={beforeDisplay.reason} current={currentSection === 'before'} connector onClick={() => go('03-2-consent')} substeps={currentSection === 'before' && before.status !== 'complete' ? ['Check you can apply', 'About you', 'Confirm your mobile', 'Prepare and consent'].map((label) => ({ label, current: label === 'Prepare and consent' })) : []}/>
+      <li className="rail-group-label">YOUR APPLICATION · {before.status === 'complete' ? 'ANY ORDER' : 'OPENS NEXT'}</li>
       {applicationSectionOrder.map((section) => {
         const current = sectionStatus(state, section)
         const config = sectionConfigs[section]
-        return <RailItem key={section} label={config.label} status={current.status} reason={reasonFor(section, current)} waitingOn={current.waitingOn} current={currentSection === section} connector onClick={() => go(routeForSection(state, section))} substeps={config.parts.length > 1 ? config.parts.map((part,index) => ({ label: part.label, current: currentPart === index + 1 })) : []}/>
+        return <RailItem key={section} label={config.label} status={current.status} reason={reasonFor(section, current)} waitingOn={current.waitingOn} current={currentSection === section} connector onClick={before.status === 'complete' ? () => go(routeForSection(state, section)) : undefined} substeps={config.parts.length > 1 ? config.parts.map((part,index) => ({ label: part.label, current: currentPart === index + 1 })) : []}/>
       })}
       <RailItem label="Review and sign" status={review.status} reason={review.reason} current={currentSection === 'review'} ready={review.status === 'complete'} onClick={review.status === 'locked' ? undefined : () => go('09-1-review')}/>
     </ol></nav>

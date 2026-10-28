@@ -1,5 +1,5 @@
 import type { ScreenDef } from '../flow/registry'
-import { AboutYouScreen, AssistanceScreen, EligibleScreen, NotSupportedScreen, PackageScreen, PhoneScreen, PrepareScreen, PrequalScreen, StartScreen } from './Entry'
+import { AboutYouScreen, AssistanceScreen, BeforeYouApplyScreen, EligibleScreen, NotSupportedScreen, PackageScreen, PhoneScreen, PrepareScreen, PrequalScreen, StartScreen } from './Entry'
 import { AddressScreen, BusinessDetailsScreen, DocumentsScreen, FindBusinessScreen, IndustryScreen, PeopleScreen, PersonScreen, SigningScreen } from './Business'
 import { DeclarationsScreen, IdvAnotherWayScreen, IdvCheckingScreen, IdvHandoffScreen, IdvReadyScreen, IdvRetryScreen, IdvVerifiedScreen, PersonalInfoScreen, PurposeFundsScreen, TaxResidencyScreen } from './IdentityTax'
 import { AgreementForm, CompareScreen, EditBusinessScreen, NeedsScreen, RecommendationScreen, ReviewScreen, SubmittedScreen } from './PackageReview'
@@ -20,7 +20,7 @@ export function ScreenRenderer({ screen }: { screen: ScreenDef }) {
     case '02-6-verify-phone': return <PhoneScreen/>
     case '02-7-verify-phone-wrong-code': return <PhoneScreen wrong/>
     case '03-1-prepare': return <PrepareScreen/>
-    case '03-2-consent': return <ConsentForm/>
+    case '03-2-consent': return <BeforeYouApplyScreen/>
     case '04-0-find-business': return <FindBusinessScreen/>
     case '04-1-business-details': return <BusinessDetailsScreen/>
     case '04-2-address': return <AddressScreen/>
