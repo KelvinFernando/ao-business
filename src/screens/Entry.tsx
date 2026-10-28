@@ -1,18 +1,18 @@
 import { useEffect, useState } from 'react'
 import { CalendarDays, Check, ChevronRight, Copy, CreditCard, FileCheck2, IdCard, Info, LockKeyhole, Mail, MapPin, Pencil, Phone, Smartphone, Users } from 'lucide-react'
 import { ActionBar, Alert, Badge, Button, Card, Checkbox, ChoiceTiles, ErrorSummary, Field, LinkButton, NumberStepper, OtpInput, YesNo } from '../components/ui'
-import { text, useApp } from '../state/AppState'
+import { chosenPackage, text, useApp } from '../state/AppState'
 import { PackageSelector, PageHeader } from './shared'
 
 export function StartScreen() {
   const { go,state,showToast } = useApp()
-  const pkg = state.package==='hybrid'?['Hybrid Package','$10/month']:state.package==='premium'?['Premium Package','$100/month']:['Digital Package','$7/month · $0 with the eligible business credit card¹']
+  const pkg = chosenPackage(state)==='hybrid'?['Hybrid Package','$10/month']:chosenPackage(state)==='premium'?['Premium Package','$100/month']:['Digital Package','$7/month · $0 with the eligible business credit card¹']
   return <><PageHeader eyebrow="Business banking" title="Open a business account online" lead="For businesses registered and operating in Canada. You can save your application and come back to it at any time."/><Card><div className="selected-product"><p className="selected-product-label">You’re applying for</p><div className="selected-product-row"><span className="selected-product-icon"><CreditCard size={24} strokeWidth={1.8}/></span><div className="selected-product-copy"><p>Business chequing account</p><h2>{pkg[0]}</h2><p>{pkg[1]}</p></div><LinkButton className="selected-product-change" onClick={()=>go('02-0b-package')}><Pencil size={16}/>Change</LinkButton></div></div><div className="start-application-copy"><h2>Start a new application</h2><p>First, we’ll ask a few quick questions to check that you can apply online. Then we’ll show you the steps and what to have ready.</p></div><div className="panel page next-steps"><strong>What happens next</strong><ul className="check-list"><li><Check size={16}/>Answer a few questions, then tell us about your business, its owners and signers</li><li><Check size={16}/>An advisor contacts you within 1 to 2 business days after you submit⁷</li><li><Check size={16}/>Pick up your business debit card at a branch⁷</li></ul></div><Button style={{alignSelf:'flex-end'}} onClick={()=>go('02-1-prequal')}>Start my application</Button></Card><Card><div className="start-application-copy"><h2>Already started?</h2><p>Pick up where you left off. We’ll send a code to the mobile phone you used on your application.</p></div><Button variant="secondary" style={{alignSelf:'flex-end'}} onClick={()=>go('12-9-resume-welcome-back')}>Continue my application</Button></Card><div className="signer-invitation"><Alert icon={<Mail size={24}/>} title="Were you asked to sign for a business?">You don’t need to start a new application. Use the link in the email we sent you.</Alert></div><button className="sr-only" onClick={()=>showToast('Secure application')}>Security information</button></>
 }
 
 export function PackageScreen() {
   const { go,state } = useApp()
-  const name = state.package==='hybrid'?'Hybrid Package':state.package==='premium'?'Premium Package':'Digital Package'
+  const name = state.startingPackage==='hybrid'?'Hybrid Package':state.startingPackage==='premium'?'Premium Package':'Digital Package'
   return <><PageHeader eyebrow="Business banking" title="Choose your package" lead="Every package includes a business chequing account. You can change your package before you submit your application."/><div className="package-choice"><div className="package-choice-main"><h2>Transaction package</h2><PackageSelector/></div><p className="xsmall muted">Conditions apply to features marked with a number or asterisk. See full package details and footnotes on nbc.ca. Fees are monthly and subject to change.</p><ActionBar back="02-0-start" save={false} continueLabel={`Continue with ${name}`} onContinue={()=>go('02-0-start')}/></div></>
 }
 

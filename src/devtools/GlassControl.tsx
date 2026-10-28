@@ -7,7 +7,7 @@ import { useApp } from '../state/AppState'
 import { PrototypeBadge } from './PrototypeBadge'
 
 export function GlassControl({ screen }: { screen: ScreenDef }) {
-  const {go,state,reset,showToast,set,setSubmitFailNext,setIdvResult}=useApp(); const location=useLocation()
+  const {go,state,reset,showToast,set,setSubmitFailNext,setIdvResult,applyPreset}=useApp(); const location=useLocation()
   const [open,setOpen]=useState(false); const [search,setSearch]=useState(''); const [position,setPosition]=useState<{x:number;y:number}|null>(()=>{try{return JSON.parse(localStorage.getItem('dco-glass-position')??'null')}catch{return null}})
   const searchRef=useRef<HTMLInputElement>(null); const barRef=useRef<HTMLDivElement>(null); const panelRef=useRef<HTMLElement>(null); const drag=useRef<{x:number;y:number;px:number;py:number}|null>(null)
   const variants=variantsFor(screen); const persona=personaFor(screen)
@@ -47,6 +47,7 @@ export function GlassControl({ screen }: { screen: ScreenDef }) {
   const filtered=screens.filter(s=>personaFor(s)===persona&&`${s.code} ${s.title}`.toLowerCase().includes(search.toLowerCase()))
   const action=(label:string,fn:()=>void)=><button key={label} className="glass-btn" onClick={fn}>{label}</button>
   const actions:React.ReactNode[]=[]
+  if(screen.id==='01-0-overview'){([['Fresh','fresh'],['Midway','midway'],['Ready','ready'],['Returning','returning'],['After change','after-change']] as const).forEach(([label,preset])=>actions.push(action(`Preset: ${label}`,()=>applyPreset(preset))))}
   if(['02-6-verify-phone','02-7-verify-phone-wrong-code','11-2-verify-code'].includes(screen.id)){const key=screen.id.startsWith('11')?'signerCode':'phoneCode';actions.push(action('Fill correct code (123456)',()=>set(key,'123456')),action('Fill wrong code',()=>set(key,'381904')))}
   if(screen.id==='04-2-address')actions.push(action('Show suggestions',()=>window.dispatchEvent(new CustomEvent('dco-address',{detail:'suggestions'}))),action('No results',()=>window.dispatchEvent(new CustomEvent('dco-address',{detail:'none'}))))
   if(['04-5-documents','04-6-documents-error','10-2-action-required','10-2b-uploading','10-2c-upload-failed'].includes(screen.id))actions.push(action('Upload succeeds',()=>{window.dispatchEvent(new CustomEvent('dco-upload',{detail:'success'}));if(screen.id.startsWith('10'))go('10-3-under-review')}),action('Upload fails',()=>{window.dispatchEvent(new CustomEvent('dco-upload',{detail:'failure'}));if(screen.id.startsWith('10'))go('10-2c-upload-failed','failed')}))

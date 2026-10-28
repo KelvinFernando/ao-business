@@ -4,14 +4,15 @@ import { GlassControl } from './devtools/GlassControl'
 import { screenById } from './flow/registry'
 import { ScreenRenderer } from './screens/ScreenRenderer'
 import { Shell } from './shell/Shell'
-import { AppStateProvider, useApp } from './state/AppState'
+import { AppStateProvider, isDemoPreset, useApp } from './state/AppState'
 import './styles/base.css'
 
 function Prototype() {
-  const location=useLocation(); const {toast,setPackage}=useApp()
+  const location=useLocation(); const {toast,setStartingPackage,applyPreset}=useApp()
   const id=location.pathname.replace(/^\//,'')
   const screen=screenById[id]??screenById['02-0-start']
-  useEffect(()=>{const pkg=new URLSearchParams(location.search).get('package');if(pkg==='digital'||pkg==='hybrid'||pkg==='premium')setPackage(pkg)},[location.search,setPackage])
+  useEffect(()=>{const pkg=new URLSearchParams(location.search).get('package');if(pkg==='digital'||pkg==='hybrid'||pkg==='premium')setStartingPackage(pkg)},[location.search,setStartingPackage])
+  useEffect(()=>{const variant=new URLSearchParams(location.search).get('v')??'';if(id==='01-0-overview'&&isDemoPreset(variant))applyPreset(variant)},[applyPreset,id,location.search])
   if(!screenById[id])return <Navigate to="/02-0-start?v=default" replace/>
   return <><Shell screen={screen}><ScreenRenderer screen={screen}/></Shell><GlassControl screen={screen}/>{toast&&<div className="toast" role="status">{toast}</div>}</>
 }
