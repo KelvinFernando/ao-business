@@ -714,6 +714,7 @@ button.rail-label:hover { color: var(--color-primary); }
 .preferred-language { padding: 24px 32px; }
 .preferred-language .yesno .choice-tile { gap: 8px; padding: 12px; }
 .preferred-language .yesno .choice-tile:has(input:checked) { padding: 11px; }
+.screen-11-5-signer-personal-info .yesno .choice-tile { width: 160px; }
 .preferred-language .choice-title { white-space: nowrap; }
 .content-column.screen-06-0-personal-info > .card:nth-of-type(3), .content-column.screen-06-0-personal-info > .card:nth-of-type(4) { padding: 24px 32px; gap: 12px; }
 .structure-card { gap: 16px !important; }

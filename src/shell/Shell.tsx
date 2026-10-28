@@ -7,7 +7,7 @@ import { applicationSectionOrder, partForScreen, routeForSection, sectionConfigs
 import { chosenPackage, sectionStatus, useApp, type SectionState } from '../state/AppState'
 import { Button, LinkButton, Modal, RailItem } from '../components/ui'
 
-const signerLabels = ['Consent','Your information','Your identity','Agreement']
+const signerLabels = ['Consent','Confirm your details','Verify your identity','Review and sign']
 const signerRoutes = ['11-4-signer-consent','11-5-signer-personal-info','11-6-signer-identity','11-7-signer-agreement']
 
 function Header({ save, language, bordered = true }: { save: boolean; language: boolean; bordered?: boolean }) {

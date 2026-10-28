@@ -15,3 +15,8 @@ export const SIGNING_BUTTON_LABELS = {
   applicant: 'Accept and submit', // PLACEHOLDER
   signer: 'Sign and submit', // PLACEHOLDER
 } as const
+
+export const RETURN_LINK_LIFETIME = null // PLACEHOLDER — not specified, never shown in UI
+export const REVERIFY_ON_RETURN = true
+export const SIGNER_REQUIRES_SIN = false // OQ-78: drawn answer is no
+export const INVITEE_CAN_EDIT_ENTERED_DETAILS = true // OQ-115: drawn answer includes Edit

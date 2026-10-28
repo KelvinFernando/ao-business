@@ -5,7 +5,7 @@ import { DeclarationsScreen, IdvAnotherWayScreen, IdvCheckingScreen, IdvHandoffS
 import { AgreementForm, CompareScreen, EditBusinessScreen, NeedsScreen, RecommendationScreen, ReviewScreen, SubmittedScreen } from './PackageReview'
 import { OverviewScreen } from './Overview'
 import { ConsentForm } from './shared'
-import { ActionStatusScreen, ApprovedStatusScreen, DeclinedStatusScreen, ExpiredLinkScreen, InvitationEmailScreen, NotExpectingScreen, ResumeScreen, ReviewStatusScreen, SavedScreen, SignerDoneScreen, SignerOverviewScreen, WaitingStatusScreen } from './StatusSigner'
+import { ActionStatusScreen, ApprovedStatusScreen, DeclinedStatusScreen, ExpiredLinkScreen, InvitationEmailScreen, NotExpectingScreen, ResumeScreen, ReviewStatusScreen, SavedScreen, SignerDoneScreen, SignerOverviewScreen, SignerPersonalInfoScreen, WaitingStatusScreen } from './StatusSigner'
 
 export function ScreenRenderer({ screen }: { screen: ScreenDef }) {
   switch (screen.id) {
@@ -71,7 +71,7 @@ export function ScreenRenderer({ screen }: { screen: ScreenDef }) {
     case '11-2b-link-expired': return <ExpiredLinkScreen/>
     case '11-3-signer-overview': return <SignerOverviewScreen/>
     case '11-4-signer-consent': return <ConsentForm signer/>
-    case '11-5-signer-personal-info': return <PersonalInfoScreen signer/>
+    case '11-5-signer-personal-info': return <SignerPersonalInfoScreen/>
     case '11-6-signer-identity': return <IdvReadyScreen signer/>
     case '11-7-signer-agreement': return <AgreementForm signer/>
     case '11-8-signer-done': return <SignerDoneScreen/>
