@@ -17,6 +17,13 @@ export interface SectionConfig {
 
 export const applicationSectionOrder: ApplicationSectionId[] = ['business', 'package', 'people', 'you_id', 'tax']
 
+export const beforeYouApplyParts: SectionPart[] = [
+  { label: 'Check you can apply', routes: ['02-1-prequal', '02-2-eligible', '02-3-assistance', '02-4-not-supported'] },
+  { label: 'About you', routes: ['02-5-about-you'] },
+  { label: 'Confirm your mobile', routes: ['02-6-verify-phone', '02-7-verify-phone-wrong-code'] },
+  { label: 'Prepare and consent', routes: ['03-1-prepare', '03-2-consent'] },
+]
+
 export const sectionConfigs: Record<ApplicationSectionId, SectionConfig> = {
   business: {
     label: 'Business',
@@ -67,7 +74,7 @@ export const sectionConfigs: Record<ApplicationSectionId, SectionConfig> = {
 }
 
 export const sectionForScreen = (screenId: string): SectionId | null => {
-  if (screenId === '03-1-prepare' || screenId === '03-2-consent') return 'before'
+  if (beforeYouApplyParts.some((part) => part.routes.includes(screenId))) return 'before'
   if (['09-1-review', '09-2-edit-business', '09-3-review-dependency', '09-5-submit-failed', '09-6-agreement'].includes(screenId)) return 'review'
   if (screenId === '09-7-change-impact') return 'business'
   if (screenId === '12-1-leave-dialog') return 'people'
@@ -79,8 +86,9 @@ export const sectionForScreen = (screenId: string): SectionId | null => {
 }
 
 export const partForScreen = (screenId: string, section: SectionId | null = sectionForScreen(screenId)) => {
-  if (!section || section === 'before' || section === 'review') return undefined
-  const index = sectionConfigs[section].parts.findIndex((part) => part.routes.includes(screenId))
+  if (!section || section === 'review') return undefined
+  const parts = section === 'before' ? beforeYouApplyParts : sectionConfigs[section].parts
+  const index = parts.findIndex((part) => part.routes.includes(screenId))
   return index < 0 ? undefined : index + 1
 }
 

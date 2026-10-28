@@ -41,8 +41,8 @@ export function NextStepCard({ title, description, buttonLabel, onClick }: { tit
   return <Card className="next-step-card"><div className="next-step-copy"><p className="eyebrow">YOUR NEXT STEP</p><h2>{title}</h2><p className="small muted">{description}</p></div><Button onClick={onClick}>{buttonLabel}</Button></Card>
 }
 
-export function AttentionRow({ title, reason, status, waitingOn, buttonLabel, onClick }: { title: string; reason: string; status: Status; waitingOn?: string[]; buttonLabel: string; onClick: () => void }) {
-  return <Card className="attention-row"><div className="attention-row-main"><StatusIcon status={status}/><div><h3>{title}</h3><p className="small muted">{statusWord(status, waitingOn)} · {reason}</p></div></div><Button variant="secondary" onClick={onClick}>{buttonLabel}</Button></Card>
+export function AttentionRow({ title, reason, status, waitingOn, buttonLabel, onClick }: { title: string; reason: string; status: Status; waitingOn?: string[]; buttonLabel?: string; onClick?: () => void }) {
+  return <Card className="attention-row"><div className="attention-row-main"><StatusIcon status={status}/><div><h3>{title}</h3><p className="small muted">{statusWord(status, waitingOn)} · {reason}</p></div></div>{buttonLabel && onClick && <Button variant="secondary" onClick={onClick}>{buttonLabel}</Button>}</Card>
 }
 
 export function WhoNeedsToAct({ rows }: { rows: { name: string; description: string; action: string }[] }) {
@@ -106,7 +106,7 @@ export function Field({ id: providedId, label, value, onChange, onBlur, helper, 
     <label className="field-label" htmlFor={id}>{label}</label>
     {helper && helperPosition === 'before' && <div className="helper" id={`${id}-helper`}>{helper}</div>}
     {error && <div className="field-error" id={`${id}-error`}><AlertCircle size={16} aria-hidden="true" /><span>{error}</span></div>}
-    {prefix ? <div className="input-prefix"><span className="prefix">{prefix}</span>{control}</div> : suffix ? <div className="input-suffix">{control}<span className="suffix">{suffix}</span></div> : trailing ? <div style={{position:'relative'}}>{control}<div style={{position:'absolute',right:12,top:10}}>{trailing}</div></div> : control}
+    {prefix ? <div className={`input-prefix ${error ? 'error' : ''}`}><span className="prefix">{prefix}</span>{control}{trailing && <span className="input-prefix-trailing">{trailing}</span>}</div> : suffix ? <div className="input-suffix">{control}<span className="suffix">{suffix}</span></div> : trailing ? <div style={{position:'relative'}}>{control}<div style={{position:'absolute',right:12,top:10}}>{trailing}</div></div> : control}
     {helper && helperPosition === 'after' && <div className="helper" id={`${id}-helper`}>{helper}</div>}
   </div>
 }

@@ -4,6 +4,7 @@ export interface IdentityProvider {
   start(personId: string): Promise<IdentityOutcome>
   sendHandoff(personId: string): Promise<IdentityOutcome>
   getStatus(personId: string): Promise<IdentityOutcome>
+  reset(): void
 }
 
 export class MockIdentityProvider implements IdentityProvider {
@@ -25,6 +26,10 @@ export class MockIdentityProvider implements IdentityProvider {
 
   setOutcome(personId: string, outcome: IdentityOutcome) {
     this.outcomes.set(personId, outcome)
+  }
+
+  reset() {
+    this.outcomes.clear()
   }
 }
 

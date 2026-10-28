@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { ArrowRight, Bell, Check, Clock3, Mail } from 'lucide-react'
 import { ActionBar, Alert, Badge, Button, Card, Checkbox, ChoiceTiles, Field, LinkButton, Modal, SelectField } from '../components/ui'
-import { array, bool, chosenPackage, reviewLocked, sectionStatus, text, useApp } from '../state/AppState'
+import { array, bool, chosenPackage, ownershipTotal, reviewLocked, sectionStatus, text, useApp } from '../state/AppState'
 import { AgreementForm, DefinitionGrid, PackageSelector, PageHeader, ReviewCards } from './shared'
 import { ADVISOR_CALLBACK, PACKAGE_PRICES, PHONE, REVIEW_TIME } from '../config/placeholders'
 
@@ -76,7 +76,7 @@ export function RecommendationScreen({ hybrid = false }: { hybrid?: boolean }) {
     <div className="panel row-between"><div><strong>Not sure this is the right fit?</strong><p className="small">A business banking specialist can help you choose. We’ll call you within {ADVISOR_CALLBACK}.</p></div><LinkButton onClick={() => { set('requestCall', true); showToast(`A specialist will call you within ${ADVISOR_CALLBACK}`) }}>Request a call</LinkButton></div>
     {bool(state.data.requestCall) && <Alert tone="success">A business banking specialist will call you within {ADVISOR_CALLBACK}.</Alert>}
     <Alert title="What happens next">Nothing is charged now. Fees start after approval and you can change package later.</Alert>
-    <ActionBar back="08-1-needs" continueLabel="Finish Package and services" onContinue={() => { setSection('package', { status: 'complete' }); go('01-0-overview') }}/>
+    <ActionBar back={variant === 'edit-review' ? '09-1-review' : '08-1-needs'} continueLabel="Finish Package and services" onContinue={() => { setSection('package', { status: 'complete' }); go(variant === 'edit-review' ? '09-1-review' : ownershipTotal(state) === 100 ? '05-1-people-exact' : '05-1-people-under') }}/>
     <PackageCompareModal open={compareOpen} onClose={closeCompare}/>
   </>
 }

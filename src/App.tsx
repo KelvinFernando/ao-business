@@ -2,9 +2,10 @@ import { useEffect } from 'react'
 import { HashRouter, Navigate, useLocation } from 'react-router-dom'
 import { GlassControl } from './devtools/GlassControl'
 import { screenById } from './flow/registry'
+import { sectionForScreen } from './flow/sections'
 import { ScreenRenderer } from './screens/ScreenRenderer'
 import { Shell } from './shell/Shell'
-import { AppStateProvider, isDemoPreset, useApp } from './state/AppState'
+import { AppStateProvider, isDemoPreset, isSectionAvailable, useApp } from './state/AppState'
 import './styles/base.css'
 
 const redirects: Record<string, string> = {
@@ -21,14 +22,16 @@ const redirects: Record<string, string> = {
 }
 
 function Prototype() {
-  const location=useLocation(); const {toast,setStartingPackage,applyPreset}=useApp()
+  const location=useLocation(); const {state,toast,setStartingPackage,applyPreset}=useApp()
   const id=location.pathname.replace(/^\//,'')
   const screen=screenById[id]??screenById['02-0-start']
+  const section=sectionForScreen(id)
   useEffect(()=>{const pkg=new URLSearchParams(location.search).get('package');if(pkg==='digital'||pkg==='hybrid'||pkg==='premium')setStartingPackage(pkg)},[location.search,setStartingPackage])
   useEffect(()=>{const variant=new URLSearchParams(location.search).get('v')??'';if(id==='01-0-overview'&&isDemoPreset(variant))applyPreset(variant)},[applyPreset,id,location.search])
   if(redirects[id])return <Navigate to={`/${redirects[id]}`} replace/>
   if(!screenById[id])return <Navigate to="/02-0-start?v=default" replace/>
-  return <><Shell screen={screen}><ScreenRenderer screen={screen}/></Shell><GlassControl screen={screen}/>{toast&&<div className="toast" role="status">{toast}</div>}</>
+  if(section&&section!=='before'&&section!=='review'&&!isSectionAvailable(state,section))return <Navigate to="/01-0-overview" replace/>
+  return <><Shell screen={screen}><ScreenRenderer key={`${location.pathname}${location.search}`} screen={screen}/></Shell><GlassControl screen={screen}/>{toast&&<div className="toast" role="status">{toast}</div>}</>
 }
 
 export default function App(){return <HashRouter><AppStateProvider><Prototype/></AppStateProvider></HashRouter>}

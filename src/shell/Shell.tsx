@@ -3,8 +3,8 @@ import { Check, CircleCheck, Home, Phone, X } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
 import logo from '../assets/nbc-logo.svg'
 import { type ScreenDef } from '../flow/registry'
-import { applicationSectionOrder, partForScreen, routeForSection, sectionConfigs, sectionForScreen, type ApplicationSectionId } from '../flow/sections'
-import { chosenPackage, sectionStatus, useApp, type SectionState } from '../state/AppState'
+import { applicationSectionOrder, beforeYouApplyParts, partForScreen, routeForSection, sectionConfigs, sectionForScreen, type ApplicationSectionId } from '../flow/sections'
+import { chosenPackage, isSectionAvailable, sectionStatus, useApp, type SectionState } from '../state/AppState'
 import { Button, LinkButton, Modal, RailItem } from '../components/ui'
 
 const signerLabels = ['Consent','Confirm your details','Verify your identity','Review and sign']
@@ -41,9 +41,12 @@ function ApplicationRail({ screen }: { screen: ScreenDef }) {
   const currentSection = sectionForScreen(screen.id)
   const currentPart = partForScreen(screen.id, currentSection)
   const before = sectionStatus(state, 'before')
-  const beforeDisplay = currentSection === 'before' && before.status !== 'complete' ? { ...before, status: 'in_progress' as const, reason: 'part 4 of 4' } : before
+  const beforeDisplay = currentSection === 'before' && before.status !== 'complete'
+    ? { ...before, status: 'in_progress' as const, reason: currentPart ? `part ${currentPart} of ${beforeYouApplyParts.length}` : before.reason }
+    : before
   const review = sectionStatus(state, 'review')
   const openSection = (section: ApplicationSectionId) => {
+    if (!isSectionAvailable(state, section)) return
     const route = routeForSection(state, section)
     if (state.sections[section].status === 'not_started') setSection(section, { status: 'in_progress', progress: { done: 0, total: sectionConfigs[section].parts.length } })
     go(route)
@@ -58,12 +61,14 @@ function ApplicationRail({ screen }: { screen: ScreenDef }) {
   return <>
     <button type="button" className={`overview-home ${screen.id === '01-0-overview' ? 'current' : ''}`} aria-current={screen.id === '01-0-overview' ? 'page' : undefined} onClick={() => go('01-0-overview')}><Home size={20}/>Application overview</button>
     <nav className="section-rail" aria-label="Application sections"><ol className="section-rail-list">
-      <RailItem label="Before you apply" status={beforeDisplay.status} reason={beforeDisplay.reason} current={currentSection === 'before'} connector onClick={() => go('03-2-consent')} substeps={currentSection === 'before' && before.status !== 'complete' ? ['Check you can apply', 'About you', 'Confirm your mobile', 'Prepare and consent'].map((label) => ({ label, current: label === 'Prepare and consent' })) : []}/>
-      <li className="rail-group-label">YOUR APPLICATION · {before.status === 'complete' ? 'ANY ORDER' : 'OPENS NEXT'}</li>
-      {applicationSectionOrder.map((section) => {
+      <RailItem label="Before you apply" status={beforeDisplay.status} reason={beforeDisplay.reason} current={currentSection === 'before'} connector onClick={() => go('03-2-consent')} substeps={currentSection === 'before' && before.status !== 'complete' ? beforeYouApplyParts.map((part, index) => ({ label: part.label, current: currentPart === index + 1 })) : []}/>
+      <li className="rail-group-label">YOUR APPLICATION · {before.status === 'complete' ? 'IN ORDER' : 'OPENS NEXT'}</li>
+      {applicationSectionOrder.map((section, index) => {
         const current = sectionStatus(state, section)
         const config = sectionConfigs[section]
-        return <RailItem key={section} label={config.label} status={current.status} reason={reasonFor(section, current)} waitingOn={current.waitingOn} current={currentSection === section} connector onClick={before.status === 'complete' ? () => openSection(section) : undefined} substeps={config.parts.length > 1 ? config.parts.map((part,index) => ({ label: part.label, current: currentPart === index + 1 })) : []}/>
+        const available = isSectionAvailable(state, section)
+        const lockedReason = before.status !== 'complete' || index === 0 ? 'Complete Before you apply first' : `Complete ${sectionConfigs[applicationSectionOrder[index - 1]].label} first`
+        return <RailItem key={section} label={config.label} status={available ? current.status : 'locked'} reason={available ? reasonFor(section, current) : lockedReason} waitingOn={current.waitingOn} current={currentSection === section} connector onClick={available ? () => openSection(section) : undefined} substeps={config.parts.length > 1 ? config.parts.map((part,index) => ({ label: part.label, current: currentPart === index + 1 })) : []}/>
       })}
       <RailItem label="Review and sign" status={review.status} reason={review.reason} current={currentSection === 'review'} ready={review.status === 'complete'} onClick={review.status === 'locked' ? undefined : () => go('09-1-review')}/>
     </ol></nav>
@@ -116,5 +121,5 @@ export function Shell({ screen, children }: { screen: ScreenDef; children: React
     return () => window.clearTimeout(timer)
   },[location.pathname,screen.title,isSigner,signerStep])
   if (screen.shell === 'email') return <>{children}{overlay === 'help' && <HelpPanel onClose={() => setOverlay(null)}/>}</>
-  return <div className="app-shell"><a className="skip-link" href="#main-content" onClick={(event)=>{event.preventDefault();document.querySelector<HTMLElement>('#main-content h1')?.focus();document.getElementById('main-content')?.scrollIntoView()}}>Skip to main content</a><Header save={(isFlow || isSigner) && !forcedLeave && !forcedHelp} language={screen.shell === 'pre' && screen.id.startsWith('02')} bordered={!isFlow && !isSigner}/>{(isFlow || isSigner) && <div className="progress-track" aria-hidden="true"><div className="progress-fill" style={{width:`${progress}%`}}/></div>}<main id="main-content" className={isPre ? 'preflow-main' : isPrepare ? 'prepare-body' : 'flow-body'}>{(isFlow || isSigner) && <aside className="sidebar"><div className="sidebar-inner"><div><h2 className="sidebar-title">{isSigner ? 'Sign for a business account' : 'Open a business account'}</h2><p className="small muted">Boulangerie Laval inc.</p></div>{isSigner ? <SignerStepper current={signerStep}/> : <ApplicationRail screen={screen}/>}<div className="save-indicator" role="status"><CircleCheck size={16} color="var(--color-success)"/>Last saved at {state.lastSavedAt}</div></div></aside>}{isPre ? <div className={`preflow-column w${screen.width ?? 640} ${screen.shell === 'status' ? 'status-column' : ''} screen-${screen.id}`}>{children}</div> : isPrepare ? children : <div className="main-column"><div className={`content-column in-flow screen-${screen.id}`}>{children}</div></div>}</main><Footer/>{(overlay === 'help' || forcedHelp) && <HelpPanel onClose={() => forcedHelp ? history.back() : setOverlay(null)}/>}{(overlay === 'leave' || forcedLeave) && <LeaveDialog onClose={() => forcedLeave ? history.back() : setOverlay(null)}/>}</div>
+  return <div className="app-shell"><a className="skip-link" href="#main-content" onClick={(event)=>{event.preventDefault();document.querySelector<HTMLElement>('#main-content h1')?.focus();document.getElementById('main-content')?.scrollIntoView()}}>Skip to main content</a><Header save={(isFlow || isSigner) && !forcedLeave && !forcedHelp} language={screen.shell === 'pre' && screen.id.startsWith('02')} bordered={!isFlow && !isSigner}/>{(isFlow || isSigner) && <div className="progress-track" aria-hidden="true"><div className="progress-fill" style={{width:`${progress}%`}}/></div>}<main id="main-content" className={isPre ? 'preflow-main' : isPrepare ? 'prepare-body' : 'flow-body'}>{(isFlow || isSigner) && <aside className="sidebar"><div className="sidebar-inner"><div><h2 className="sidebar-title">{isSigner ? 'Sign for a business account' : 'Open a business account'}</h2><p className="small muted">Boulangerie Laval inc.</p></div>{isSigner ? <SignerStepper current={signerStep}/> : <ApplicationRail screen={screen}/>}<div className="save-indicator" role="status"><CircleCheck size={16} color="var(--color-success)"/>Last saved at {state.lastSavedAt}</div></div></aside>}{isPre ? <div className={`preflow-column w${screen.width ?? 640} ${screen.shell === 'status' ? 'status-column' : ''} screen-${screen.id}`}>{children}</div> : isPrepare ? children : <div className="main-column"><div className={`content-column in-flow w${screen.width ?? 736} screen-${screen.id}`}>{children}</div></div>}</main><Footer/>{(overlay === 'help' || forcedHelp) && <HelpPanel onClose={() => forcedHelp ? history.back() : setOverlay(null)}/>}{(overlay === 'leave' || forcedLeave) && <LeaveDialog onClose={() => forcedLeave ? history.back() : setOverlay(null)}/>}</div>
 }

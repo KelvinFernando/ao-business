@@ -62,21 +62,21 @@ const initialData: Record<string, unknown> = {
   ownersAllIndividuals: 'Yes', applicantIsOwnerSigner: 'Yes', signersAllOwners: 'Yes', all18: 'Yes', allInCanada: 'Yes',
   operatesInCanada: 'Yes', businessPurpose: 'Yes', onBehalf: 'No',
   legalBusinessName: 'Boulangerie Laval inc.', firstName: 'Marie', lastName: 'Tremblay', email: 'marie@boulangerielaval.ca', mobile: '(514) 555-0142',
-  privacyConsent: true, accountLanguage: 'English', smsCredentials: false, phoneCode: '',
-  consents: [true, false, false, false, false], signerConsents: [true, false, false],
+  privacyConsent: true, accountLanguage: 'English', smsCredentials: false, phoneCode: '123456', signerCode: '123456',
+  consents: [true, true, true, true, true], signerConsents: [true, true, true],
   operatingName: 'Boulangerie Laval', businessPhone: '(450) 555-0137', website: 'boulangerielaval.ca', province: 'Quebec', neq: '1170 123 456', bn: '',
   operatingSixMonths: 'Yes', incorporationDate: '14 March 2019', operatingSince: 'May 1, 2019', fiscalYearEnd: 'December 31', businessAddress: '1250 boul Saint-Mar', unit: '', mailingSame: 'Yes', ownLease: 'Lease',
   street: '1250 boul. Saint-Martin O', city: 'Laval', postal: 'H7S 1M', description: 'Artisan bakery in Laval. We bake bread and pastries on site and sell them in our shop, with a small café counter.',
   industry: 'Bakery that sells to the public', otherActivities: 'Yes', mainPercent: 80, otherPercent: 20, employees: 6, revenue: '$250,000 to $499,999',
-  lucFirstName: 'Luc', lucLastName: 'Gagnon', lucEmail: 'luc@boulangerielaval.ca', lucMobile: '(514) 555-0177', lucTitle: 'Vice-president', lucOwner: true, lucSigner: true, lucPercent: 25,
+  lucFirstName: 'Luc', lucLastName: 'Gagnon', lucEmail: 'luc@boulangerielaval.ca', lucMobile: '(514) 555-0177', lucTitle: 'Vice-president', lucOwner: true, lucSigner: true, lucPercent: 40, lucAdded: false,
   openingSigners: 'One signer', daySigners: 'Two signers', loanSigners: 'One signer',
   dobDay: '14', dobMonth: 'March', dobYear: '1984', homeAddress: '4820 rue Fabre, Montréal, QC H2J 3V8', homeMailingSame: 'Yes', occupation: 'Business owner', employment: 'Self-employed', sin: '123 456 482', preferredLanguage: 'English',
-  otherTaxCountry: 'Yes', taxCountry: 'France', countryTin: '12 345 678 901', noCountryTin: false, usTin: 'No', thirdParty: 'No', pep: undefined,
+  otherTaxCountry: 'Yes', taxCountry: 'France', countryTin: '12 345 678 901', noCountryTin: false, usTin: 'No', thirdParty: 'No', pep: 'No', monthlyCash: 'Less than $5,000',
   employeesToPay: '6 to 20', payFrequency: 'Every 2 weeks', payrollManager: 'My accountant', payrollOptIn: true,
   international: ['Pay suppliers abroad','Buy or sell foreign currency'], suppliers: ['Interac e-Transfer','Electronic funds transfer (EFT)'], projects: ['Equipment'],
   partnerPayments: false, partnerPayroll: false, requestCall: false,
-  agreementChecks: [false,false,false], signature: '', signerAgreementChecks: [false,false,false], signerSignature: '',
-  signerFirstName: 'Luc', signerLastName: 'Gagnon', signerDobDay: '14', signerDobMonth: 'March', signerDobYear: '1984', signerMobile: '(514) 555-0177', signerOccupation: 'Business owner', signerEmployment: 'Employed', signerHomeAddress: '4820 rue Fabre, Montréal, QC H2J 3V8', signerConfirm: false,
+  agreementChecks: [true,true,true], signature: 'Marie Tremblay', signerAgreementChecks: [true,true,true], signerSignature: 'Luc Gagnon',
+  signerFirstName: 'Luc', signerLastName: 'Gagnon', signerDobDay: '14', signerDobMonth: 'March', signerDobYear: '1984', signerMobile: '(514) 555-0177', signerOccupation: 'Business owner', signerEmployment: 'Employed', signerHomeAddress: '4820 rue Fabre, Montréal, QC H2J 3V8', signerConfirm: true,
   fraudReport: false, dependencyAnswered: false, accountUses: ['Daily operations','Paying suppliers','Receiving customer payments','Cash deposits'], fundSources: ['Business revenue','Other'],
 }
 
@@ -128,6 +128,7 @@ export function createDemoPreset(preset: DemoPreset): DemoState {
     ...base,
     package: 'digital',
     people: peopleWithOwnership(25),
+    data: { ...base.data, lucPercent: 25, lucAdded: true },
     sections: sectionStates({
       before: { status: 'complete' },
       business: { status: 'complete' },
@@ -145,7 +146,7 @@ export function createDemoPreset(preset: DemoPreset): DemoState {
     ...base,
     package: 'digital',
     usPerson: false,
-    data: { ...base.data, lucPercent: 40, pep: 'No' },
+    data: { ...base.data, lucPercent: 40, pep: 'No', lucAdded: true },
     people: peopleWithOwnership(40),
     sections: sectionStates({
       before: { status: 'complete' },
@@ -161,7 +162,7 @@ export function createDemoPreset(preset: DemoPreset): DemoState {
 
   return {
     ...ready,
-    data: { ...ready.data, industry: 'Restaurants (full service)', monthlyCash: '', dependencyAnswered: false },
+    data: { ...ready.data, industry: 'Restaurants (full service)', monthlyCash: 'Less than $5,000', dependencyAnswered: false },
     sections: {
       ...ready.sections,
       tax: { status: 'needs_attention', reason: '1 new question' },
@@ -203,13 +204,17 @@ export function sectionStatus(model: AppModel, section: SectionId): SectionState
   return stored
 }
 
+export function isSectionAvailable(model: AppModel, section: Exclude<SectionId, 'before' | 'review'>): boolean {
+  if (sectionStatus(model, 'before').status !== 'complete') return false
+  if (sectionStatus(model, section).status === 'complete') return true
+  const index = applicationSections.indexOf(section)
+  return applicationSections.slice(0, index).every((previous) => sectionStatus(model, previous).status === 'complete')
+}
+
 export function nextAction(model: AppModel): SectionId | null {
-  const actionable = applicationSections.map((section) => ({ section, state: sectionStatus(model, section) }))
-  const priorities: Status[] = ['needs_attention', 'in_progress', 'not_started']
-  for (const status of priorities) {
-    const match = actionable.find((item) => item.state.status === status)
-    if (match) return match.section
-  }
+  if (sectionStatus(model, 'before').status !== 'complete') return 'before'
+  const next = applicationSections.find((section) => sectionStatus(model, section).status !== 'complete')
+  if (next) return next
   return reviewLocked(model) ? null : 'review'
 }
 
@@ -271,17 +276,19 @@ export function appReducer(state: DemoState, action: AppAction): DemoState {
   }
 }
 
-export const STATE_KEY = 'dco-demo-state-v2'
+export const STATE_KEY = 'dco-demo-state-v3'
 
 const loadState = (initial: DemoState): DemoState => {
   try {
     const raw = sessionStorage.getItem(STATE_KEY)
     if (!raw) return initial
     const saved = JSON.parse(raw) as Partial<DemoState>
+    const data = { ...initial.data, ...(saved.data ?? {}) }
+    if (saved.data?.lucAdded === undefined && saved.sections?.people && saved.sections.people.status !== 'not_started') data.lucAdded = true
     return {
       ...initial,
       ...saved,
-      data: { ...initial.data, ...(saved.data ?? {}) },
+      data,
       sections: { ...initial.sections, ...(saved.sections ?? {}) },
       people: saved.people ?? initial.people,
       pendingAttention: saved.pendingAttention ?? initial.pendingAttention,
@@ -341,6 +348,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const applyChange = useCallback((change: ChangeId, dataKey: string, value: unknown) => update({ type: 'apply-change', change, dataKey, value }), [update])
   const markSubmitted = useCallback(() => update({ type: 'set-submitted', at: new Date().toISOString() }), [update])
   const applyPreset = useCallback((preset: DemoPreset) => {
+    identityProvider.reset()
     checkpoint.current = createDemoPreset(preset)
     update({ type: 'apply-preset', preset })
   }, [update])
@@ -379,6 +387,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   const reset = useCallback(() => {
     const next = freshState()
+    identityProvider.reset()
     sessionStorage.removeItem(STATE_KEY)
     checkpoint.current = next
     update({ type: 'replace', state: next })
@@ -420,10 +429,18 @@ export function runStateModelChecks() {
   const ready = createDemoPreset('ready')
   const returning = createDemoPreset('returning')
   const afterChange = createDemoPreset('after-change')
+  const businessComplete: DemoState = { ...fresh, sections: { ...fresh.sections, business: { status: 'complete' } } }
+  const beforeIncomplete: DemoState = { ...fresh, sections: { ...fresh.sections, before: { status: 'in_progress' } } }
   const checks: [string, boolean][] = [
     ['fresh: Before you apply complete', sectionStatus(fresh, 'before').status === 'complete'],
     ['fresh: all application sections not started', applicationSections.every((section) => sectionStatus(fresh, section).status === 'not_started')],
     ['fresh: Review locked', reviewLocked(fresh)],
+    ['Before you apply incomplete: Before is next and Business locked', nextAction(beforeIncomplete) === 'before' && !isSectionAvailable(beforeIncomplete, 'business')],
+    ['fresh: Business is next', nextAction(fresh) === 'business'],
+    ['fresh: only Business is available', isSectionAvailable(fresh, 'business') && applicationSections.slice(1).every((section) => !isSectionAvailable(fresh, section))],
+    ['fresh: Luc not added', fresh.data.lucAdded === false],
+    ['Business complete: Package is next and available', nextAction(businessComplete) === 'package' && isSectionAvailable(businessComplete, 'package')],
+    ['Business complete: later sections stay locked', !isSectionAvailable(businessComplete, 'people') && !isSectionAvailable(businessComplete, 'you_id') && !isSectionAvailable(businessComplete, 'tax')],
     ['fresh: starting package separate from final package', fresh.startingPackage === 'digital' && fresh.package === null && chosenPackage(fresh) === 'digital'],
     ['midway: Business complete', sectionStatus(midway, 'business').status === 'complete'],
     ['midway: Package complete with Digital', sectionStatus(midway, 'package').status === 'complete' && chosenPackage(midway) === 'digital'],
@@ -432,6 +449,8 @@ export function runStateModelChecks() {
     ['midway: Tax not started', sectionStatus(midway, 'tax').status === 'not_started'],
     ['midway: Review locked for 3 sections', sectionStatus(midway, 'review').reason === 'finish 3 more sections'],
     ['midway: needs attention is next', nextAction(midway) === 'people'],
+    ['midway: People available but later progress locked', isSectionAvailable(midway, 'people') && !isSectionAvailable(midway, 'you_id') && !isSectionAvailable(midway, 'tax')],
+    ['midway: Luc added', midway.data.lucAdded === true],
     ['ready: all application sections complete', applicationSections.every((section) => sectionStatus(ready, section).status === 'complete')],
     ['ready: Review ready', !reviewLocked(ready) && sectionStatus(ready, 'review').status === 'complete'],
     ['ready: next action is Review', nextAction(ready) === 'review'],
