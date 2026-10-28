@@ -726,6 +726,7 @@ button.rail-label:hover { color: var(--color-primary); }
 .content-column.screen-06-0-personal-info > .card { gap: 16px; }
 .screen-06-0-personal-info .card > .stack-sm { gap: 4px; }
 .screen-06-0-personal-info .card .field-label { font-size: 14px; line-height: 20px; }
+.employment-details > .field.w120 { flex: 0 0 120px; }
 .preferred-language { padding: 24px 32px; }
 .preferred-language .yesno .choice-tile { gap: 8px; padding: 12px; }
 .preferred-language .yesno .choice-tile:has(input:checked) { padding: 11px; }

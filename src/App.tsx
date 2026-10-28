@@ -26,11 +26,12 @@ function Prototype() {
   const id=location.pathname.replace(/^\//,'')
   const screen=screenById[id]??screenById['02-0-start']
   const section=sectionForScreen(id)
+  const prototypeJump=location.state?.prototypeJump===true
   useEffect(()=>{const pkg=new URLSearchParams(location.search).get('package');if(pkg==='digital'||pkg==='hybrid'||pkg==='premium')setStartingPackage(pkg)},[location.search,setStartingPackage])
   useEffect(()=>{const variant=new URLSearchParams(location.search).get('v')??'';if(id==='01-0-overview'&&isDemoPreset(variant))applyPreset(variant)},[applyPreset,id,location.search])
-  if(redirects[id])return <Navigate to={`/${redirects[id]}`} replace/>
+  if(redirects[id])return <Navigate to={`/${redirects[id]}`} replace state={location.state}/>
   if(!screenById[id])return <Navigate to="/02-0-start?v=default" replace/>
-  if(section&&section!=='before'&&section!=='review'&&!isSectionAvailable(state,section))return <Navigate to="/01-0-overview" replace/>
+  if(section&&section!=='before'&&section!=='review'&&!prototypeJump&&!isSectionAvailable(state,section))return <Navigate to="/01-0-overview" replace/>
   return <><Shell screen={screen}><ScreenRenderer key={`${location.pathname}${location.search}`} screen={screen}/></Shell><GlassControl screen={screen}/>{toast&&<div className="toast" role="status">{toast}</div>}</>
 }
 

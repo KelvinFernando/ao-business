@@ -307,7 +307,7 @@ interface AppContextValue {
   applyChange: (change: ChangeId, dataKey: string, value: unknown) => void
   markSubmitted: () => void
   applyPreset: (preset: DemoPreset) => void
-  go: (route: string, variant?: string) => void
+  go: (route: string, variant?: string, options?: { prototypeJump?: boolean }) => void
   saveExit: () => void
   markSaved: () => void
   discardChanges: () => void
@@ -373,10 +373,10 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     update({ type: 'replace', state: { ...checkpoint.current, dirty: false } })
   }, [update])
 
-  const go = useCallback((route: string, variant = 'default') => {
+  const go = useCallback((route: string, variant = 'default', options: { prototypeJump?: boolean } = {}) => {
     markSaved()
     setOverlay(null)
-    navigate(`/${route}?v=${variant}`)
+    navigate(`/${route}?v=${variant}`, { state: options.prototypeJump ? { prototypeJump: true } : null })
     window.scrollTo(0, 0)
   }, [markSaved, navigate])
 

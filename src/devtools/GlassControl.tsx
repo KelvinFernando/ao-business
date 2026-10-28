@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useLocation } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, ChevronDown, Copy, GripHorizontal, RotateCcw, Search, X } from 'lucide-react'
@@ -7,7 +7,8 @@ import { useApp } from '../state/AppState'
 import { PrototypeBadge } from './PrototypeBadge'
 
 export function GlassControl({ screen }: { screen: ScreenDef }) {
-  const {go,state,reset,showToast,set,setSubmitFailNext,setIdvResult,applyPreset}=useApp(); const location=useLocation()
+  const {go:goInFlow,state,reset,showToast,set,setSubmitFailNext,setIdvResult,applyPreset}=useApp(); const location=useLocation()
+  const go=useCallback((route:string,variant='default')=>goInFlow(route,variant,{prototypeJump:true}),[goInFlow])
   const [open,setOpen]=useState(false); const [search,setSearch]=useState(''); const [position,setPosition]=useState<{x:number;y:number}|null>(()=>{try{return JSON.parse(localStorage.getItem('dco-glass-position')??'null')}catch{return null}})
   const searchRef=useRef<HTMLInputElement>(null); const barRef=useRef<HTMLDivElement>(null); const panelRef=useRef<HTMLElement>(null); const drag=useRef<{x:number;y:number;px:number;py:number}|null>(null)
   const variants=variantsFor(screen); const persona=personaFor(screen)
