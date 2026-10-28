@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, type ChangeEvent, type ReactNode } from 'react'
 import { AlertCircle, Check, CircleAlert, CircleCheck, Clock3, CloudUpload, FileText, Info, LoaderCircle, Minus, Plus, Save, TriangleAlert, X } from 'lucide-react'
-import { useApp } from '../state/AppState'
+import { useApp, type Status } from '../state/AppState'
 
 export function Button({ children, variant = 'primary', small = false, className = '', ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary'; small?: boolean }) {
   return <button className={`btn ${variant} ${small ? 'small' : ''} ${className}`} {...props}>{children}</button>
@@ -12,6 +12,40 @@ export function LinkButton({ children, className = '', ...props }: React.ButtonH
 
 export function Badge({ children, tone = '', className = '' }: { children: ReactNode; tone?: string; className?: string }) {
   return <span className={`badge ${tone} ${className}`}>{children}</span>
+}
+
+const statusWord = (status: Status, waitingOn?: string[]) => status === 'not_started' ? 'Not started' : status === 'in_progress' ? 'In progress' : status === 'needs_attention' ? 'Needs attention' : status === 'waiting' ? `Waiting for ${waitingOn?.[0] ?? 'someone'}` : status === 'locked' ? 'Locked' : 'Complete'
+
+export function StatusIcon({ status }: { status: Status }) {
+  const content = status === 'complete' ? <><circle cx="12" cy="12" r="12" fill="var(--color-success)"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></> : status === 'in_progress' ? <><circle cx="12" cy="12" r="11" fill="#FFFFFF" stroke="var(--color-primary)" strokeWidth="2"/><path d="M12 4a8 8 0 0 1 0 16z" fill="var(--color-primary)"/></> : status === 'needs_attention' ? <><path d="M12 2.5L22.5 21h-21z" fill="var(--color-warning)"/><path d="M12 9v5M12 17v.5" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round"/></> : status === 'waiting' ? <><circle cx="12" cy="12" r="11" fill="#FFFFFF" stroke="var(--color-primary)" strokeWidth="2"/><path d="M12 11v6M12 7.5v.5" stroke="var(--color-primary)" strokeWidth="2" strokeLinecap="round"/></> : status === 'locked' ? <><circle cx="12" cy="12" r="11.5" fill="var(--color-grey050)" stroke="var(--color-grey300)"/><rect x="8" y="11" width="8" height="6.5" rx="1" fill="var(--color-grey600)"/><path d="M10 11V9.5a2 2 0 0 1 4 0V11" fill="none" stroke="var(--color-grey600)" strokeWidth="1.4"/></> : <circle cx="12" cy="12" r="11" fill="#FFFFFF" stroke="var(--color-grey300)" strokeWidth="2"/>
+  return <svg className="status-icon" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">{content}</svg>
+}
+
+export function StatusLine({ status, reason, waitingOn, ready = false }: { status: Status; reason?: string; waitingOn?: string[]; ready?: boolean }) {
+  return <span className={`status-line status-${status}`}>{ready && status === 'complete' ? 'Ready' : statusWord(status, waitingOn)}{reason ? ` · ${reason}` : ''}</span>
+}
+
+export function RailItem({ label, status, reason, waitingOn, current = false, connector = false, ready = false, onClick, substeps = [] }: { label: string; status: Status; reason?: string; waitingOn?: string[]; current?: boolean; connector?: boolean; ready?: boolean; onClick?: () => void; substeps?: { label: string; current: boolean }[] }) {
+  return <li className={`rail-item ${current ? 'current' : ''}`}>
+    <div className="step-indicator-col"><StatusIcon status={status}/>{connector && <span className={`step-connector ${status === 'complete' ? 'done' : ''}`}/>}</div>
+    <div className="rail-item-content">
+      {onClick ? <button type="button" className="rail-label" aria-current={current ? 'step' : undefined} onClick={onClick}>{label}</button> : <span className="rail-label" aria-current={current ? 'step' : undefined}>{label}</span>}
+      <StatusLine status={status} reason={reason} waitingOn={waitingOn} ready={ready}/>
+      {current && substeps.length > 0 && <ol className="substeps">{substeps.map((substep) => <li key={substep.label} className={substep.current ? 'current' : ''}>{substep.label}</li>)}</ol>}
+    </div>
+  </li>
+}
+
+export function NextStepCard({ title, description, buttonLabel, onClick }: { title: string; description: string; buttonLabel: string; onClick: () => void }) {
+  return <Card className="next-step-card"><div className="next-step-copy"><p className="eyebrow">YOUR NEXT STEP</p><h2>{title}</h2><p className="small muted">{description}</p></div><Button onClick={onClick}>{buttonLabel}</Button></Card>
+}
+
+export function AttentionRow({ title, reason, status, waitingOn, buttonLabel, onClick }: { title: string; reason: string; status: Status; waitingOn?: string[]; buttonLabel: string; onClick: () => void }) {
+  return <Card className="attention-row"><div className="attention-row-main"><StatusIcon status={status}/><div><h3>{title}</h3><p className="small muted">{reason}</p><span className="sr-only">{statusWord(status, waitingOn)}</span></div></div><Button variant="secondary" onClick={onClick}>{buttonLabel}</Button></Card>
+}
+
+export function WhoNeedsToAct({ rows }: { rows: { name: string; description: string; action: string }[] }) {
+  return <Card className="who-act-card" title="Who needs to act">{rows.map((row, index) => <div className={`who-act-row ${index > 0 ? 'separated' : ''}`} key={row.name}><div><strong>{row.name}</strong><p className="small muted">{row.description}</p></div><span className="small">{row.action}</span></div>)}</Card>
 }
 
 export function Card({ children, className = '', title, subtitle, ...props }: React.HTMLAttributes<HTMLElement> & { children: ReactNode; title?: string; subtitle?: string }) {

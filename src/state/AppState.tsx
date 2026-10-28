@@ -129,7 +129,7 @@ export function createDemoPreset(preset: DemoPreset): DemoState {
       business: { status: 'complete' },
       package: { status: 'complete' },
       people: { status: 'needs_attention', reason: '15% not assigned' },
-      you_id: { status: 'in_progress', progress: { done: 1, total: 2 } },
+      you_id: { status: 'in_progress', reason: 'ID check not started', progress: { done: 1, total: 2 } },
       tax: { status: 'not_started' },
       review: { status: 'locked', reason: 'finish 3 more sections' },
     }),
