@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useReducer,
 import { useNavigate } from 'react-router-dom'
 import { REFERENCE } from '../config/placeholders'
 import { identityProvider } from '../identity/IdentityProvider'
+import { impactsForChange, type ChangeId } from '../flow/dependencies'
 
 export type Overlay = 'help' | 'leave' | 'why' | 'remove-person' | null
 export type IdvResult = 'verified' | 'retry' | 'failed' | 'longer'
@@ -64,7 +65,7 @@ const initialData: Record<string, unknown> = {
   privacyConsent: true, accountLanguage: 'English', smsCredentials: false, phoneCode: '',
   consents: [true, false, false, false, false], signerConsents: [true, false, false],
   operatingName: 'Boulangerie Laval', businessPhone: '(450) 555-0137', website: 'boulangerielaval.ca', province: 'Quebec', neq: '1170 123 456', bn: '',
-  operatingSixMonths: 'Yes', businessAddress: '1250 boul Saint-Mar', unit: '', mailingSame: 'Yes', ownLease: 'Lease',
+  operatingSixMonths: 'Yes', incorporationDate: '14 March 2019', operatingSince: 'May 1, 2019', fiscalYearEnd: 'December 31', businessAddress: '1250 boul Saint-Mar', unit: '', mailingSame: 'Yes', ownLease: 'Lease',
   street: '1250 boul. Saint-Martin O', city: 'Laval', postal: 'H7S 1M', description: 'Artisan bakery in Laval. We bake bread and pastries on site and sell them in our shop, with a small café counter.',
   industry: 'Bakery that sells to the public', otherActivities: 'Yes', mainPercent: 80, otherPercent: 20, employees: 6, revenue: '$250,000 to $499,999',
   lucFirstName: 'Luc', lucLastName: 'Gagnon', lucEmail: 'luc@boulangerielaval.ca', lucMobile: '(514) 555-0177', lucTitle: 'Vice-president', lucOwner: true, lucSigner: true, lucPercent: 25,
@@ -220,6 +221,8 @@ export type AppAction =
   | { type: 'set-starting-package'; value: PackageId }
   | { type: 'set-section'; section: SectionId; value: SectionState }
   | { type: 'resolve-attention'; section: SectionId }
+  | { type: 'apply-change'; change: ChangeId; dataKey: string; value: unknown }
+  | { type: 'set-submitted'; at: string }
   | { type: 'mark-saved'; at: string }
   | { type: 'replace'; state: DemoState }
   | { type: 'apply-preset'; preset: DemoPreset }
@@ -242,6 +245,24 @@ export function appReducer(state: DemoState, action: AppAction): DemoState {
     case 'set-starting-package': return { ...state, startingPackage: action.value, dirty: true }
     case 'set-section': return { ...state, sections: { ...state.sections, [action.section]: action.value }, dirty: true }
     case 'resolve-attention': return { ...state, pendingAttention: state.pendingAttention.filter((entry) => entry.section !== action.section), dirty: true }
+    case 'apply-change': {
+      const changed = appReducer(state, { type: 'set', key: action.dataKey, value: action.value })
+      const sections = { ...changed.sections }
+      let pendingAttention = [...changed.pendingAttention]
+      for (const impact of impactsForChange(action.change)) {
+        if (impact.section === 'review') {
+          sections.review = { ...sections.review, status: 'locked' }
+          continue
+        }
+        if (impact.newQuestion && !pendingAttention.some((entry) => entry.section === impact.section && entry.question === impact.newQuestion)) {
+          pendingAttention = [...pendingAttention, { section: impact.section, question: impact.newQuestion }]
+        }
+        const reason = impact.newQuestion ? '1 new question' : impact.effect === 'redo' ? 'Review this change' : 'Re-confirm saved answers'
+        sections[impact.section] = { ...sections[impact.section], status: 'needs_attention', reason }
+      }
+      return { ...changed, sections, pendingAttention }
+    }
+    case 'set-submitted': return { ...state, submitted: { at: action.at } }
     case 'mark-saved': return { ...state, dirty: false, lastSavedAt: action.at }
     case 'replace': return action.state
     case 'apply-preset': return createDemoPreset(action.preset)
@@ -276,6 +297,8 @@ interface AppContextValue {
   setStartingPackage: (value: PackageId) => void
   setSection: (section: SectionId, value: SectionState) => void
   resolveAttention: (section: SectionId) => void
+  applyChange: (change: ChangeId, dataKey: string, value: unknown) => void
+  markSubmitted: () => void
   applyPreset: (preset: DemoPreset) => void
   go: (route: string, variant?: string) => void
   saveExit: () => void
@@ -315,6 +338,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const setStartingPackage = useCallback((value: PackageId) => update({ type: 'set-starting-package', value }), [update])
   const setSection = useCallback((section: SectionId, value: SectionState) => update({ type: 'set-section', section, value }), [update])
   const resolveAttention = useCallback((section: SectionId) => update({ type: 'resolve-attention', section }), [update])
+  const applyChange = useCallback((change: ChangeId, dataKey: string, value: unknown) => update({ type: 'apply-change', change, dataKey, value }), [update])
+  const markSubmitted = useCallback(() => update({ type: 'set-submitted', at: new Date().toISOString() }), [update])
   const applyPreset = useCallback((preset: DemoPreset) => {
     checkpoint.current = createDemoPreset(preset)
     update({ type: 'apply-preset', preset })
@@ -363,7 +388,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     update({ type: 'set-idv-result', value })
   }, [update])
 
-  const value = useMemo(() => ({ state, set, setPackage, setStartingPackage, setSection, resolveAttention, applyPreset, go, saveExit, markSaved, discardChanges, reset, overlay, setOverlay, toast, showToast, setSubmitFailNext, setIdvResult }), [state, set, setPackage, setStartingPackage, setSection, resolveAttention, applyPreset, go, saveExit, markSaved, discardChanges, reset, overlay, toast, showToast, setSubmitFailNext, setIdvResult])
+  const value = useMemo(() => ({ state, set, setPackage, setStartingPackage, setSection, resolveAttention, applyChange, markSubmitted, applyPreset, go, saveExit, markSaved, discardChanges, reset, overlay, setOverlay, toast, showToast, setSubmitFailNext, setIdvResult }), [state, set, setPackage, setStartingPackage, setSection, resolveAttention, applyChange, markSubmitted, applyPreset, go, saveExit, markSaved, discardChanges, reset, overlay, toast, showToast, setSubmitFailNext, setIdvResult])
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
 }
 

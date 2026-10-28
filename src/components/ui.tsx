@@ -218,7 +218,7 @@ export function Modal({ title, children, footer, onClose, className = '' }: { ti
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null
-    ref.current?.focus()
+    ref.current?.querySelector<HTMLElement>('h2')?.focus()
     const listener = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose()
       if (event.key === 'Tab' && ref.current) {
@@ -233,5 +233,5 @@ export function Modal({ title, children, footer, onClose, className = '' }: { ti
     document.addEventListener('keydown',listener)
     return () => { document.removeEventListener('keydown',listener); previous?.focus() }
   }, [onClose])
-  return <div className="modal-scrim" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}><div ref={ref} className={`modal ${className}`} role="dialog" aria-modal="true" aria-labelledby="modal-title" tabIndex={-1}><div className="modal-header"><h2 id="modal-title">{title}</h2><button className="icon-button" aria-label="Close" onClick={onClose}><X size={20}/></button></div><div className="modal-body">{children}</div>{footer && <div className="modal-footer">{footer}</div>}</div></div>
+  return <div className="modal-scrim" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}><div ref={ref} className={`modal ${className}`} role="dialog" aria-modal="true" aria-labelledby="modal-title" tabIndex={-1}><div className="modal-header"><h2 id="modal-title" tabIndex={-1}>{title}</h2><button className="icon-button" aria-label="Close" onClick={onClose}><X size={20}/></button></div><div className="modal-body">{children}</div>{footer && <div className="modal-footer">{footer}</div>}</div></div>
 }

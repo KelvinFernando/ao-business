@@ -75,6 +75,7 @@ export function TaxResidencyScreen() {
   const { state, set, setSection, resolveAttention, go, showToast } = useApp()
   const location = useLocation()
   const error = new URLSearchParams(location.search).get('v') === 'error'
+  const returnToReview = new URLSearchParams(location.search).get('v') === 'edit-review'
   const [attempted, setAttempted] = useState(error)
   const [thirdOpen, setThirdOpen] = useState(false)
   const [pepOpen, setPepOpen] = useState(!error)
@@ -96,7 +97,7 @@ export function TaxResidencyScreen() {
     if (Object.keys(errors).length) return
     if (pendingCash) resolveAttention('tax')
     setSection('tax', { status: 'complete' })
-    go('01-0-overview')
+    go(returnToReview ? '09-1-review' : '01-0-overview')
   }
   return <>
     {attempted && Object.keys(errors).length > 0 && <ErrorSummary title="There’s information to fix" items={Object.entries(errors).map(([id, label]) => ({ id, label }))}/>}

@@ -53,7 +53,7 @@ export function ScreenRenderer({ screen }: { screen: ScreenDef }) {
     case '09-1-review': return <ReviewScreen/>
     case '09-2-edit-business': return <EditBusinessScreen/>
     case '09-3-review-dependency': return <ReviewScreen dependency/>
-    case '09-7-change-impact': return <IndustryScreen/>
+    case '09-7-change-impact': return <IndustryScreen impact/>
     case '09-6-agreement': return <AgreementForm/>
     case '09-5-submit-failed': return <ReviewScreen dependency failed/>
     case '09-4-submitted': return <SubmittedScreen/>

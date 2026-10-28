@@ -89,3 +89,4 @@ export const dependencyMatrix: Record<ChangeId, DependencyRule> = {
 }
 
 export const impactsForChange = (change: ChangeId) => dependencyMatrix[change].impacts
+export const isCashIntensiveIndustry = (industry: string) => industry === 'Restaurants (full service)'
