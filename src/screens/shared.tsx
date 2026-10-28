@@ -1,0 +1,126 @@
+import { Fragment, useState, type ReactNode } from 'react'
+import { Check, ChevronDown, CircleCheck, Download, ExternalLink, FileText, Lock, Pencil } from 'lucide-react'
+import { Alert, Badge, Button, Card, Checkbox, ErrorSummary, Field, LinkButton } from '../components/ui'
+import { boolArray, chosenPackage, maskedPhone, ownershipTotal, text, useApp, type PackageId } from '../state/AppState'
+import { PACKAGE_PRICES, REVIEW_TIME, SIGNING_BUTTON_LABELS } from '../config/placeholders'
+
+export function PageHeader({ eyebrow, title, lead, children }: { eyebrow?: string; title: string; lead?: ReactNode; children?: ReactNode }) {
+  return <div className="page-heading">{eyebrow && <p className="eyebrow">{eyebrow}</p>}<h1 tabIndex={-1}>{title}</h1>{lead && <div className="lead">{lead}</div>}{children}</div>
+}
+
+export function DefinitionGrid({ items }: { items: [string, ReactNode, boolean?][] }) {
+  return <dl className="definition-grid">{items.map(([label,value,full]) => <div className={`definition ${full ? 'full' : ''}`} key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+}
+
+export function PackageSelector({ recommendation = false, suggested = 'digital' }: { recommendation?: boolean; suggested?: PackageId }) {
+  const { state, setPackage, setStartingPackage } = useApp()
+  const packages = [
+    {id:'digital' as const,name:'Digital Package',fee:PACKAGE_PRICES.digital,sub:'$0/month with the eligible business credit card¹ · Ideal for your online transactions',desc:'For businesses that bank online.'},
+    {id:'hybrid' as const,name:'Hybrid Package',fee:PACKAGE_PRICES.hybrid,sub:'10 digital² or assisted⁶ transactions per month · unlimited cheque deposits · 2 Interac e-Transfer® transactions⁵',desc:'For businesses with fewer transactions.'},
+    {id:'premium' as const,name:'Premium Package',fee:PACKAGE_PRICES.premium,sub:'$0 with a balance of $80,000 or more* · unlimited digital, 100 assisted transactions · unlimited Interac e-Transfer®',desc:'For businesses with more transactions.'},
+  ]
+  return <Card className="package-list" aria-label="Transaction package">{packages.map((pkg) => {
+    const selected = recommendation ? chosenPackage(state) === pkg.id : state.startingPackage === pkg.id
+    return <Fragment key={pkg.id}><label className={`package-row ${selected ? 'selected' : ''}`}><input id={`package-${pkg.id}`} type="radio" name="package" checked={selected} onChange={() => recommendation ? setPackage(pkg.id) : setStartingPackage(pkg.id)}/><span className="radio-dot"/><div className="package-details"><div className="row-between"><div className="row wrap"><span className="package-title">{pkg.name}</span>{recommendation && pkg.id===suggested && <Badge tone="primary">Suggested for you</Badge>}{recommendation && pkg.id===state.startingPackage && <Badge tone="tint">You started with this</Badge>}</div><span className="package-price">{pkg.fee}/month</span></div><p className="small muted">{recommendation ? `${pkg.fee}/month · ${pkg.sub}` : pkg.sub}</p>{!recommendation && selected && pkg.id==='digital' && <ul className="check-list small package-features"><li><Check size={16}/>Unlimited digital transactions²</li><li><Check size={16}/>Unlimited cheque deposits by ABM, mobile³ and scanner⁴</li><li><Check size={16}/>12 outgoing Interac e-Transfer® transactions⁵</li><li><Check size={16}/>Unlimited batch deposits with Clover, processed next business day⁸</li></ul>}{recommendation && selected && <><p className="small text-success"><Check size={16}/> Matches your answers</p><div className="package-expanded"><div><strong>Why it may fit</strong><ul className="check-list small" style={{marginTop:12}}><li><Check size={16}/>Business credit card for the equipment purchase you’re planning.</li><li><Check size={16}/>Lower-cost international payments. You said you pay suppliers abroad.</li></ul></div><div><strong>What’s included</strong><ul className="check-list small" style={{marginTop:12}}><li><Check size={16}/>Unlimited digital transactions²</li><li><Check size={16}/>Unlimited cheque deposits by ABM, mobile³ and scanner⁴</li><li><Check size={16}/>12 outgoing Interac e-Transfers⁵ per month</li><li><Check size={16}/>Clover batch deposits⁸</li></ul><LinkButton onClick={() => window.open('about:blank','_blank','noopener')}>Full details and fees</LinkButton></div></div></>}</div></label>{recommendation && pkg.id==='digital' && <div className="panel row-between" style={{borderRadius:0}}><strong>Other packages you can choose</strong><Button variant="secondary" small onClick={() => window.dispatchEvent(new CustomEvent('dco-compare-packages'))}>Compare all packages</Button></div>}</Fragment>
+  })}</Card>
+}
+
+export function ConsentForm({ signer = false }: { signer?: boolean }) {
+  const { state, set, go, saveExit } = useApp()
+  const key = signer ? 'signerConsents' : 'consents'
+  const checks = boolArray(state.data[key], signer ? 3 : 5)
+  const [attempted,setAttempted] = useState(false)
+  const update = (index: number,value: boolean) => set(key,checks.map((check,i) => i===index?value:check))
+  type ConsentCard = { title: string; body: string; legal?: string; bullets?: string[]; links?: string[]; privacy?: string; check: string }
+  const applicant: ConsentCard[] = [
+    {title:'How we use your information',body:'We collect information about you, your business, and the people who own and run it. We use it to open and manage the account, verify identities, and meet our legal obligations.',privacy:'Read our privacy policy',legal:'{Full consent text: purposes of collection, sharing with credit bureaus and service providers, retention, how to withdraw consent.}',check:'I agree that National Bank can collect, use and share my information as described.'},
+    {title:'Verifying your identity',body:'Later in the application, you’ll take a photo of your ID and a selfie. A trusted partner compares them to confirm it’s really you. We may also check your information with a credit bureau. This won’t affect your credit score.',legal:'{Biometric consent wording, IDV vendor name, credit-bureau check type (soft/hard), retention of images.}',check:'I agree that National Bank can verify my identity this way.'},
+    {title:'Receiving documents electronically',body:'We’ll send your agreements, disclosures and account documents by email and online banking instead of by mail.',check:'I agree to receive documents electronically.'},
+    {title:'Checks we’ll do',body:'To confirm the business and the people behind it, we’ll check:',bullets:['the business registry, to confirm the business exists and who runs it','your personal credit file, with a credit bureau','the business’s credit file, with a business credit bureau'],legal:'{Bureau names, soft vs. hard inquiry, effect on credit score, retention.}',check:'I authorize National Bank to do these checks.'},
+    {title:'Agreements that apply',body:'Each link opens in a new tab. You’ll sign the final agreement at the end.',links:['Business Account and Banking Services Agreement','Privacy Policy','Fee Guide for business services'],check:'I confirm I’ve read these documents and I’m authorized to apply for the business.'},
+  ]
+  const signerCards: ConsentCard[] = [
+    {title:'How we use your information',body:'We collect information about you as an owner and signer of the business. We use it to verify your identity, open and manage the account, and meet our legal obligations.',legal:'{Full consent text: purposes of collection, sharing with credit bureaus and service providers, retention, how to withdraw consent.}',check:'I agree that National Bank can collect, use and share my information as described.'},
+    {title:'Verifying your identity',body:'In a few steps, you’ll take a photo of your ID and a selfie. A trusted partner compares them to confirm it’s really you. We may also check your information with a credit bureau. This won’t affect your credit score.',legal:'{Biometric consent wording, IDV vendor name, credit-bureau check type (soft/hard), retention of images.}',check:'I agree that National Bank can verify my identity this way.'},
+    {title:'Receiving documents electronically',body:'We’ll send your agreements, disclosures and account documents by email and online banking instead of by mail.',check:'I agree to receive documents electronically.'},
+  ]
+  const cards = signer ? signerCards : applicant
+  const missing = checks.map((check,index) => !check ? index : -1).filter((index) => index>=0)
+  const next = () => { setAttempted(true); if(missing.length) return; go(signer?'11-5-signer-personal-info':'04-1-business-details') }
+  return <>{attempted && missing.length>0 && <ErrorSummary title={signer?'Check all three boxes to continue':'Check all five boxes to continue'} items={missing.map((index)=>({id:`consent-${index}`,label:cards[index].title}))}/>}<PageHeader eyebrow={signer?'Step 1 of 4':'Before you apply · Part 4 of 4'} title={signer?'Before you share your information':'Before we collect your information'} lead={signer?'As a signer for Boulangerie Laval inc., we need your consent on how we collect, use and verify your personal information.':'To open an account for your business, we need your consent on how we collect, use and verify your information. Read each section, then check the boxes to continue.'}/><div className="stack" style={{gap:16}}>{cards.map((card,index) => <Card key={card.title} className="compact"><div className="row-between"><h2>{card.title}</h2>{card.legal && <ChevronDown size={18} color="var(--color-primary)"/>}</div><p>{card.body}</p>{card.bullets && <ul style={{paddingLeft:24}}>{card.bullets.map((item)=><li key={item}>{item}</li>)}</ul>}{card.legal && <div className="panel" style={{border:'1px dashed var(--color-grey500)'}}><strong className="xsmall text-warning">LEGAL-APPROVED COPY REQUIRED</strong><p className="small">{card.legal}</p></div>}{card.privacy && <a href="about:blank" target="_blank" rel="noopener">{card.privacy}</a>}{card.links && <div className="consent-documents">{signer && <span className="small muted">Read before you agree</span>}<div className="consent-links">{card.links.map((link)=><a key={link} href="about:blank" target="_blank" rel="noopener"><FileText size={16}/>{link}</a>)}</div></div>}<div className="consent-check"><Checkbox id={`consent-${index}`} checked={checks[index]} onChange={(value)=>update(index,value)} label={card.check} error={attempted&&!checks[index]?'Check this box to continue.':undefined}/></div></Card>)}</div><Alert>You need to agree to all {signer?'three':'five'} to {signer?'sign':'apply'} online. If you’d rather not, an advisor can {signer?'help you sign in person':'open the account with you'}. <LinkButton onClick={()=>go('02-3-assistance')}>{signer?'Contact an advisor':'Book a meeting with an advisor'}</LinkButton></Alert><div className="action-bar"><Button variant="secondary" onClick={()=>go(signer?'11-3-signer-overview':'03-1-prepare')}>Back</Button><div className="action-group"><button className="save-link" onClick={saveExit}>Save and finish later</button><Button onClick={next}>Agree and continue</Button></div></div></>
+}
+
+export function AgreementForm({ signer = false, failed = false, embedded = false }: { signer?: boolean; failed?: boolean; embedded?: boolean }) {
+  const { state,set,go,showToast,setSubmitFailNext,markSubmitted } = useApp()
+  const key = signer?'signerAgreementChecks':'agreementChecks'
+  const checks = boolArray(state.data[key],3)
+  const signatureKey = signer?'signerSignature':'signature'
+  const signature = text(state.data[signatureKey])
+  const expected = signer?'Luc Gagnon':'Marie Tremblay'
+  const account = chosenPackage(state)
+  const accountName = account === 'hybrid' ? 'Hybrid Package' : account === 'premium' ? 'Premium Package' : 'Digital Package'
+  const luc = state.people.find((person) => person.id === 'luc')
+  const [attempted,setAttempted] = useState(false)
+  const [busy,setBusy] = useState(false)
+  const docs = [['Account Agreement for business banking','24'],['Fee Guide for business services','12'],['Privacy Notice','6']]
+  const missing = checks.map((check,index)=>!check?index:-1).filter(i=>i>=0)
+  const signatureValid = signature.trim().toLowerCase()===expected.toLowerCase()
+  const submit = () => {
+    setAttempted(true)
+    if(missing.length||!signatureValid)return
+    setBusy(true)
+    window.setTimeout(()=>{setBusy(false);if(!signer&&state.submitFailNext){setSubmitFailNext(false);go('09-5-submit-failed','failed')}else {if(!signer)markSubmitted();go(signer?'11-8-signer-done':'09-4-submitted')}},1200)
+  }
+  return <>{failed && <Alert tone="error" title="We couldn’t submit your application">Your answers are still here. Check your connection and select Submit application again.<br/>If it still doesn’t work, call us at 1 888 XXX-XXXX and give this code: {'{Error reference}'}.</Alert>}{attempted&&(missing.length>0||!signatureValid)&&<ErrorSummary title="There’s information to confirm" items={[...missing.map(index=>({id:`agreement-check-${index}`,label:`Confirm that you have read the ${docs[index][0]}.`})),...(!signatureValid?[{id:'signature',label:`Type your full legal name exactly as shown: ${expected}.`}]:[])]}/>}{!embedded&&<PageHeader eyebrow={signer?'Step 4 of 4':'Review and sign'} title={signer?'Review and sign':'Review and accept the account agreement'} lead={signer?'Check your details and what you’re agreeing to, then sign.':'Read the 3 documents, confirm each one, then sign with your full legal name.'}/>}{signer&&<Card title="Your details and package"><DefinitionGrid items={[["Name",`${text(state.data.signerFirstName)} ${text(state.data.signerLastName)}`],["Date of birth",`${text(state.data.signerDobDay)} ${text(state.data.signerDobMonth)} ${text(state.data.signerDobYear)}`],["Home address",text(state.data.signerHomeAddress)],["Occupation",`${text(state.data.signerOccupation)} · ${text(state.data.signerEmployment)} since ${text(state.data.signerOccupationYear,'2016')}`],["Business",state.legalName],["Your role",`Owner (${luc?.ownership ?? 40}%) and authorized signer`],["Account",accountName]]}/><Badge tone="success"><Check size={14}/>Identity verified</Badge><div className="row"><LinkButton onClick={()=>go('11-5-signer-personal-info')}>Edit your details</LinkButton><span className="small muted">Package chosen by Marie. Ask her if it should change.</span></div></Card>}<Card title="What signing means" subtitle={signer?'In plain language, when you sign you confirm that:':'When you sign, you confirm that:'}><ul className="check-list">{(signer?["The information you gave us is accurate and complete.","National Bank will verify your identity and may share information with fraud-prevention services.","The account terms and fees in these documents apply.","Your electronic signature has the same effect as a handwritten one."]:["The information you gave is accurate and complete, and you’re authorized to open this account for Boulangerie Laval inc.","National Bank will verify your identity and may share information with fraud-prevention services.","The account terms and fees in the documents below apply.","Your typed e-signature has the same legal effect as a handwritten one."]).map(item=><li key={item}><Check size={16}/>{item}</li>)}</ul></Card><Card title="Documents to review" subtitle="Open each document to read it. You can download or print a copy.">{docs.map(([name,pages],index)=><div key={name} className="stack-sm"><div className="row"><FileText size={32} color="var(--color-primary)"/><div className="grow"><strong>{name}</strong><p className="helper">PDF · {pages} pages · Opens in a new tab · We’ll email you a copy</p></div><a href="about:blank" target="_blank" rel="noopener"><ExternalLink size={14}/>Open</a><LinkButton onClick={()=>showToast('PDF download started')}><Download size={14}/>Download PDF</LinkButton><LinkButton onClick={()=>window.print()}>Print</LinkButton></div>{index<2&&<hr className="divider"/>}</div>)}<hr className="divider"/>{docs.map(([name],index)=><Checkbox id={`agreement-check-${index}`} key={name} checked={checks[index]} onChange={(value)=>set(key,checks.map((check,i)=>i===index?value:check))} label={`I have read and understand the ${name}.`} error={attempted&&!checks[index]?`Confirm that you have read the ${name}.`:undefined}/>)}</Card><Card title="Electronic signature"><div className="form-row"><Field label="Full legal name" value={expected} onChange={()=>{}} readOnly/><Field label="Date" value="May 12, 2025" onChange={()=>{}} readOnly/></div><Field id="signature" label="Signature" helper="Type your full legal name exactly as shown above." placeholder="Your full legal name" value={signature} onChange={(value)=>set(signatureKey,value)} error={attempted&&!signatureValid?`Type your full legal name exactly as shown: ${expected}.`:undefined}/><Alert>Your electronic signature has the same legal value as a handwritten signature. It applies to the 3 documents above.</Alert></Card>{signer?<Alert>After you sign, you can’t change your information. We’ll email you a copy of the signed documents.</Alert>:<Card title="Before you submit" className="primary-outline"><p>Once you submit, you won’t be able to change your answers online. Here’s what happens next:</p><ol className="number-list"><li><span className="number-circle">1</span>We email Luc Gagnon so he can verify his identity and sign.</li><li><span className="number-circle">2</span>We review your application. This usually takes {REVIEW_TIME}.</li><li><span className="number-circle">3</span>You can follow every step on your application status page.</li></ol></Card>}<div className="action-bar"><Button variant="secondary" onClick={()=>go(signer?'11-6-signer-identity':embedded?'01-0-overview':'09-1-review')}>Back</Button><div className="action-group"><button className="save-link" onClick={()=>go('12-2-application-saved')}>Save and finish later</button><Button onClick={submit} disabled={busy} aria-busy={busy}>{busy?'Saving…':signer?SIGNING_BUTTON_LABELS.signer:SIGNING_BUTTON_LABELS.applicant}</Button></div></div></>
+}
+
+export function ReviewCards() {
+  const { go, state } = useApp()
+  const selected = chosenPackage(state)
+  const packageName = selected === 'hybrid' ? 'Hybrid Package' : selected === 'premium' ? 'Premium Package' : 'Digital Package'
+  const packageFee = PACKAGE_PRICES[selected]
+  const marie = state.people.find((person) => person.id === 'marie')
+  const address = `${text(state.data.street)}, ${text(state.data.city)} ${text(state.data.province)} ${text(state.data.postal)}`
+  const edit = (route: string) => <LinkButton onClick={() => go(route, 'edit-review')}><Pencil size={16}/>Edit</LinkButton>
+  return <>
+    <Card><div className="row-between"><h2>Business information</h2>{edit('04-1-business-details')}</div><DefinitionGrid items={[
+      ['Legal name', state.legalName], ['Operating name', text(state.data.operatingName)],
+      ['Business structure', text(state.data.structure)], ['Business phone', text(state.data.businessPhone)],
+      ['Website', text(state.data.website)], ['Account language', state.language === 'fr' ? 'Français' : 'English'],
+      ['Incorporated in', `${text(state.data.province)}, on ${text(state.data.incorporationDate)}`], ['Quebec enterprise number (NEQ)', `*** *** ${text(state.data.neq).replace(/\D/g, '').slice(-3)}`],
+      ['Business address', address], ['Mailing address', text(state.data.mailingSame) === 'Yes' ? 'Same as business address' : text(state.data.homeMailing)],
+      ['Own or lease the property', text(state.data.ownLease)], ['Operating since', text(state.data.operatingSince)],
+      ['Fiscal year end', text(state.data.fiscalYearEnd)],
+    ]}/></Card>
+    <Card><div className="row-between"><h2>Business activities</h2>{edit('04-4-industry')}</div><DefinitionGrid items={[
+      ['What the business does', text(state.data.description), true],
+      ['Main activity', `${text(state.data.industry)} (${Number(state.data.mainPercent)}%)`], ['Other activities', text(state.data.otherActivities) === 'Yes' ? `Café or coffee shop (${Number(state.data.otherPercent)}%)` : 'No'],
+      ['People working in the business', state.employees ?? 'Not answered'], ['Expected annual revenue', text(state.data.revenue)],
+    ]}/></Card>
+    <Card><div className="row-between"><h2>Your package</h2><LinkButton onClick={() => go('08-2-recommendation', 'edit-review')}><Pencil size={16}/>Change</LinkButton></div><DefinitionGrid items={[
+      ['Package', packageName], ['Monthly fee', `${packageFee} a month`],
+      ['Partner solutions of interest', state.data.partnerPayroll ? 'Payroll services by {Partner}' : 'None'],
+      ['Specialist follow-up', state.data.requestCall ? 'Yes, contact me about these' : 'No'],
+    ]}/></Card>
+    <Card><div className="row-between"><h2>Owners and signers</h2>{edit('05-1-people-exact')}</div><div className="stack-sm">{state.people.map((person) => <div className="row-between" key={person.id}><div><strong>{person.firstName} {person.lastName}{person.primary ? ' (you)' : ''}</strong><p>{person.title}{person.owner ? ` · Owns ${person.ownership}%` : ''}{person.signer ? ' · Authorized signer' : ''}</p>{!person.primary && <p className="small muted">{person.email}<br/>We’ll email {person.firstName} after you sign.</p>}</div><Badge tone={person.primary ? 'success' : 'tint'}>{person.primary ? 'Details complete' : 'Will be invited at submission'}</Badge></div>)}</div><div className="panel"><CircleCheck size={16} color="var(--color-success)"/> Total ownership declared: {ownershipTotal(state)}%</div></Card>
+    <Card><div className="row-between"><h2>Signing requirements</h2>{edit('05-3-signing')}</div><DefinitionGrid items={[
+      ['Opening accounts', text(state.data.openingSigners)], ['Day-to-day transactions', text(state.data.daySigners)],
+      ['Loans and credit', text(state.data.loanSigners)], ['Signing Authority Resolution', text(state.data.daySigners) === 'One signer' ? 'Not required' : 'You’ll upload it after you submit'],
+    ]}/></Card>
+    <Card><div className="row-between"><h2>Your information</h2>{edit('06-0-personal-info')}</div><DefinitionGrid items={[
+      ['Email', text(state.data.email)], ['Mobile phone', maskedPhone(marie?.mobile ?? '')],
+      ['Home address', text(state.data.homeAddress)], ['Mailing address', text(state.data.homeMailingSame) === 'Yes' ? 'Same as home address' : text(state.data.homeMailing)],
+      ['Occupation', text(state.data.occupation)], ['Employment', text(state.data.employment)],
+      ['Role in the company', `${text(state.data.marieTitle, 'President')}, owner and authorized signer`], ['Preferred language', state.language === 'fr' ? 'Français' : 'English'],
+    ]}/></Card>
+    <Card className="grey"><div className="row-between"><h2><Lock size={18}/> Identity verification</h2><Badge tone="success"><Check size={14}/>Verified</Badge></div><p className="small">Why we ask: by law, we must confirm the identity of everyone who opens a business account.</p><DefinitionGrid items={[["Legal name", `${text(state.data.firstName)} ${text(state.data.lastName)}`], ["Date of birth", `** / ** / ${text(state.data.dobYear)}`]]}/><p className="small muted">Verified with your driver’s licence. Verified details can’t be changed here.</p></Card>
+    <Card><div className="row-between"><h2>Tax and declarations</h2>{edit('07-1-tax-residency')}</div><p className="small">Why we ask: Canadian and international tax rules require us to confirm where the business pays tax and who owns or controls it.</p><DefinitionGrid items={[
+      ['Business is a tax resident of', state.taxCountries.map((country) => country.country).filter(Boolean).join(', ')],
+      ['Business is a U.S. person', state.usPerson ? 'Yes' : 'No'],
+      ['U.S. taxpayer number', state.usPerson ? text(state.data.usTinNumber, 'Not answered') : 'Not applicable'],
+      ['Account used on behalf of someone else', text(state.data.thirdParty, 'Not answered')],
+      ['Politically exposed person', text(state.data.pep) === 'No' ? 'No one in this application' : text(state.data.pep, 'Not answered')],
+      ...(text(state.data.monthlyCash) ? [['Cash handled in a typical month', text(state.data.monthlyCash)] as [string, string]] : []),
+    ]}/></Card>
+  </>
+}
