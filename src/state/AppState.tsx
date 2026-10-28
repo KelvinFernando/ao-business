@@ -350,6 +350,17 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     checkpoint.current = stateRef.current
   }, [update])
 
+  useEffect(() => {
+    const autosave = (event: FocusEvent) => {
+      const target = event.target
+      if (!(target instanceof HTMLInputElement || target instanceof HTMLSelectElement || target instanceof HTMLTextAreaElement)) return
+      if (target.disabled || ((target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) && target.readOnly) || !target.checkValidity()) return
+      markSaved()
+    }
+    document.addEventListener('focusout', autosave)
+    return () => document.removeEventListener('focusout', autosave)
+  }, [markSaved])
+
   const discardChanges = useCallback(() => {
     update({ type: 'replace', state: { ...checkpoint.current, dirty: false } })
   }, [update])

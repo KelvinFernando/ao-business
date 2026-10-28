@@ -94,8 +94,6 @@ export function PrototypeBadge() {
       if (resumeTimer.current) clearTimeout(resumeTimer.current)
       jumpTimer.current = null
       resumeTimer.current = null
-      rive.stop('Happy jump')
-      rive.play('Prototype idle')
     }
   }, [rive, phase, dismissed])
 

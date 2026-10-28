@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, type ChangeEvent, type ReactNode } from 'react'
 import { AlertCircle, Check, CircleAlert, CircleCheck, Clock3, CloudUpload, FileText, Info, LoaderCircle, Minus, Plus, Save, TriangleAlert, X } from 'lucide-react'
 import { useApp, type Status } from '../state/AppState'
+import { UPLOAD_LIMIT } from '../config/placeholders'
 
 export function Button({ children, variant = 'primary', small = false, className = '', ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary'; small?: boolean }) {
   return <button className={`btn ${variant} ${small ? 'small' : ''} ${className}`} {...props}>{children}</button>
@@ -41,7 +42,7 @@ export function NextStepCard({ title, description, buttonLabel, onClick }: { tit
 }
 
 export function AttentionRow({ title, reason, status, waitingOn, buttonLabel, onClick }: { title: string; reason: string; status: Status; waitingOn?: string[]; buttonLabel: string; onClick: () => void }) {
-  return <Card className="attention-row"><div className="attention-row-main"><StatusIcon status={status}/><div><h3>{title}</h3><p className="small muted">{reason}</p><span className="sr-only">{statusWord(status, waitingOn)}</span></div></div><Button variant="secondary" onClick={onClick}>{buttonLabel}</Button></Card>
+  return <Card className="attention-row"><div className="attention-row-main"><StatusIcon status={status}/><div><h3>{title}</h3><p className="small muted">{statusWord(status, waitingOn)} · {reason}</p></div></div><Button variant="secondary" onClick={onClick}>{buttonLabel}</Button></Card>
 }
 
 export function WhoNeedsToAct({ rows }: { rows: { name: string; description: string; action: string }[] }) {
@@ -112,20 +113,22 @@ export function Field({ id: providedId, label, value, onChange, onBlur, helper, 
 
 export function SelectField({ id: providedId, label, value, onChange, options, helper, error, width = 'w296', placeholder }: { id?: string; label: string; value: string; onChange: (value: string) => void; options: string[]; helper?: ReactNode; error?: string; width?: FieldProps['width']; placeholder?: string }) {
   const generated = useId(); const id = providedId ?? generated
-  return <div className={`field ${width}`}><label className="field-label" htmlFor={id}>{label}</label>{helper && <div className="helper">{helper}</div>}{error && <div className="field-error"><AlertCircle size={16}/>{error}</div>}<select id={id} className={`select ${error ? 'error' : ''}`} value={value} onChange={(event) => onChange(event.target.value)} aria-invalid={!!error}>{placeholder && <option value="">{placeholder}</option>}{options.map((option) => <option key={option}>{option}</option>)}</select></div>
+  const describedBy = [helper ? `${id}-helper` : '', error ? `${id}-error` : ''].filter(Boolean).join(' ') || undefined
+  return <div className={`field ${width}`}><label className="field-label" htmlFor={id}>{label}</label>{helper && <div className="helper" id={`${id}-helper`}>{helper}</div>}{error && <div className="field-error" id={`${id}-error`}><AlertCircle size={16}/>{error}</div>}<select id={id} className={`select ${error ? 'error' : ''}`} value={value} onChange={(event) => onChange(event.target.value)} aria-invalid={!!error} aria-describedby={describedBy}>{placeholder && <option value="">{placeholder}</option>}{options.map((option) => <option key={option}>{option}</option>)}</select></div>
 }
 
 export function TextareaField({ id: providedId, label, value, onChange, helper, maxLength = 500, error }: { id?: string; label: string; value: string; onChange: (value: string) => void; helper?: string; maxLength?: number; error?: string }) {
   const generated = useId(); const id = providedId ?? generated
-  return <div className="field full"><label className="field-label" htmlFor={id}>{label}</label>{helper && <p className="helper">{helper}</p>}{error && <p className="field-error"><AlertCircle size={16}/>{error}</p>}<textarea id={id} className={`textarea ${error ? 'error' : ''}`} maxLength={maxLength} value={value} onChange={(event) => onChange(event.target.value)} aria-invalid={!!error}/><div className="counter" aria-live="polite">{value.length} of {maxLength} characters</div></div>
+  const describedBy = [helper ? `${id}-helper` : '', error ? `${id}-error` : ''].filter(Boolean).join(' ') || undefined
+  return <div className="field full"><label className="field-label" htmlFor={id}>{label}</label>{helper && <p className="helper" id={`${id}-helper`}>{helper}</p>}{error && <p className="field-error" id={`${id}-error`}><AlertCircle size={16}/>{error}</p>}<textarea id={id} className={`textarea ${error ? 'error' : ''}`} maxLength={maxLength} value={value} onChange={(event) => onChange(event.target.value)} aria-invalid={!!error} aria-describedby={describedBy}/><div className="counter" aria-live="polite">{value.length} of {maxLength} characters</div></div>
 }
 
 export function Checkbox({ id: providedId, checked, onChange, label, helper, error, boxed = false }: { id?: string; checked: boolean; onChange: (checked: boolean) => void; label: ReactNode; helper?: ReactNode; error?: string; boxed?: boolean }) {
   const generated = useId(); const id = providedId ?? generated
   return <div className="stack-sm" style={{gap:8}}>
-    <label className={`checkbox-row ${boxed ? 'boxed-check' : ''}`} htmlFor={id}><input id={id} type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} aria-invalid={!!error}/><span className="checkbox-box"><Check size={15} strokeWidth={2.5}/></span><span>{label}</span></label>
-    {helper && <div className="helper" style={{paddingLeft:36}}>{helper}</div>}
-    {error && <div className="field-error" style={{paddingLeft:36}}><AlertCircle size={16}/>{error}</div>}
+    <label className={`checkbox-row ${boxed ? 'boxed-check' : ''}`} htmlFor={id}><input id={id} type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} aria-invalid={!!error} aria-describedby={[helper ? `${id}-helper` : '', error ? `${id}-error` : ''].filter(Boolean).join(' ') || undefined}/><span className="checkbox-box"><Check size={15} strokeWidth={2.5}/></span><span>{label}</span></label>
+    {helper && <div className="helper" id={`${id}-helper`} style={{paddingLeft:36}}>{helper}</div>}
+    {error && <div className="field-error" id={`${id}-error`} style={{paddingLeft:36}}><AlertCircle size={16}/>{error}</div>}
   </div>
 }
 
@@ -155,9 +158,10 @@ export function ChoiceTiles({ name, value, onChange, options, columns = 2, type 
 }
 
 export function YesNo({ name, value, onChange, compact = false, options = ['Yes','No'], error }: { name: string; value?: string; onChange: (value: string) => void; compact?: boolean; options?: string[]; error?: string }) {
-  return <div className="stack-sm" style={{gap:8}}><div className={`yesno ${compact ? 'compact' : ''}`} role="radiogroup" aria-label={name}>
+  const groupId = useId()
+  return <div className="stack-sm" style={{gap:8}}><div className={`yesno ${compact ? 'compact' : ''}`} role="radiogroup" aria-label={name} aria-describedby={error ? `${groupId}-error` : undefined}>
     {options.map((option) => <label key={option} className="choice-tile"><input type="radio" name={name} value={option} checked={value === option} onChange={() => onChange(option)}/><span className="radio-dot"/><span className="choice-title">{option}</span></label>)}
-  </div>{error && <div className="field-error"><AlertCircle size={16}/>{error}</div>}</div>
+  </div>{error && <div className="field-error" id={`${groupId}-error`}><AlertCircle size={16}/>{error}</div>}</div>
 }
 
 export function NumberStepper({ value, onChange, min = 1, max = 99, label }: { value: number; onChange: (value: number) => void; min?: number; max?: number; label: string }) {
@@ -182,7 +186,7 @@ export function OtpInput({ value, onChange, error, label = 'Verification code' }
 
 export function UploadDrop({ title = 'Drag and drop a file here', onUpload, error }: { title?: string; onUpload: (file?: File) => void; error?: boolean }) {
   const input = useRef<HTMLInputElement>(null)
-  return <div className={`upload-drop ${error ? 'error' : ''}`} onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); onUpload(event.dataTransfer.files[0]) }}><CloudUpload size={40} color="var(--color-primary)"/><div className="grow"><strong>{title}</strong><p className="helper">PDF, JPG or PNG, up to 10 MB</p></div><Button variant="secondary" small onClick={() => input.current?.click()}>Browse files</Button><input ref={input} className="sr-only" type="file" aria-label="Upload document" accept=".pdf,.jpg,.jpeg,.png" onChange={(event) => onUpload(event.target.files?.[0])}/></div>
+  return <div className={`upload-drop ${error ? 'error' : ''}`} onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); onUpload(event.dataTransfer.files[0]) }}><CloudUpload size={40} color="var(--color-primary)"/><div className="grow"><strong>{title}</strong><p className="helper">PDF, JPG or PNG, up to {UPLOAD_LIMIT}</p></div><Button variant="secondary" small onClick={() => input.current?.click()}>Browse files</Button><input ref={input} className="sr-only" type="file" aria-label="Upload document" accept=".pdf,.jpg,.jpeg,.png" onChange={(event) => onUpload(event.target.files?.[0])}/></div>
 }
 
 export function FileRow({ name, state = 'done', progress = 64, onRemove, onRetry }: { name: string; state?: 'done' | 'uploading' | 'error'; progress?: number; onRemove?: () => void; onRetry?: () => void }) {
