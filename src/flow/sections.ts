@@ -41,7 +41,7 @@ export const sectionConfigs: Record<ApplicationSectionId, SectionConfig> = {
   people: {
     label: 'Owners and signers',
     firstRoute: '05-1-people-under',
-    minutes: 4,
+    minutes: 3,
     parts: [
       { label: 'Owners and signers', routes: ['05-1-people-under', '05-1-people-exact', '05-1-people-over', '05-2-person'] },
       { label: 'Signing requirements', routes: ['05-3-signing'] },
@@ -85,8 +85,11 @@ export const partForScreen = (screenId: string, section: SectionId | null = sect
 }
 
 export const routeForSection = (model: AppModel, section: ApplicationSectionId) => {
-  if (section === 'people' && ownershipTotal(model) === 100) return '05-1-people-exact'
   const stored = model.sections[section]
   const partIndex = stored.status === 'in_progress' && stored.progress ? Math.min(stored.progress.done, sectionConfigs[section].parts.length - 1) : 0
+  if (partIndex === 0) {
+    if (section === 'people' && ownershipTotal(model) === 100) return '05-1-people-exact'
+    return sectionConfigs[section].firstRoute
+  }
   return sectionConfigs[section].parts[partIndex].routes[0]
 }

@@ -43,10 +43,10 @@ export function ScreenRenderer({ screen }: { screen: ScreenDef }) {
     case '06-6-idv-another-way': return <IdvAnotherWayScreen/>
     case '07-1-tax-residency': return <TaxResidencyScreen/>
     case '07-2-declarations': return <DeclarationsScreen key="default"/>
-    case '07-3-declarations-error': return <DeclarationsScreen key="error" error/>
+    case '07-3-declarations-error': return <DeclarationsScreen key="error"/>
     case '07-4-purpose-funds': return <PurposeFundsScreen/>
     case '08-1-needs': return <NeedsScreen/>
-    case '08-1b-use-case-opener': return <NeedsScreen concept/>
+    case '08-1b-use-case-opener': return <NeedsScreen/>
     case '08-2-recommendation': return <RecommendationScreen/>
     case '08-2b-suggest-hybrid': return <RecommendationScreen hybrid/>
     case '08-3-compare': return <CompareScreen/>

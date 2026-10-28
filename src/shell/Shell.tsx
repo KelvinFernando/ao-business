@@ -37,14 +37,20 @@ function SignerStepper({ current }: { current: number }) {
 const packageName = (value: ReturnType<typeof chosenPackage>) => value === 'hybrid' ? 'Hybrid' : value === 'premium' ? 'Premium' : 'Digital'
 
 function ApplicationRail({ screen }: { screen: ScreenDef }) {
-  const { go, state } = useApp()
+  const { go, state, setSection } = useApp()
   const currentSection = sectionForScreen(screen.id)
   const currentPart = partForScreen(screen.id, currentSection)
   const before = sectionStatus(state, 'before')
   const beforeDisplay = currentSection === 'before' && before.status !== 'complete' ? { ...before, status: 'in_progress' as const, reason: 'part 4 of 4' } : before
   const review = sectionStatus(state, 'review')
+  const openSection = (section: ApplicationSectionId) => {
+    const route = routeForSection(state, section)
+    if (state.sections[section].status === 'not_started') setSection(section, { status: 'in_progress', progress: { done: 0, total: sectionConfigs[section].parts.length } })
+    go(route)
+  }
   const reasonFor = (section: ApplicationSectionId, current: SectionState) => {
     if (current.status === 'complete' && section === 'package') return `${packageName(chosenPackage(state))} Package`
+    if (current.status === 'in_progress' && section === 'tax') return '1 page'
     if (current.status === 'in_progress' && currentSection === section && currentPart) return `part ${currentPart} of ${sectionConfigs[section].parts.length}`
     if (current.status === 'not_started' && section === 'package') return `${packageName(state.startingPackage)} chosen at start`
     return current.reason
@@ -57,7 +63,7 @@ function ApplicationRail({ screen }: { screen: ScreenDef }) {
       {applicationSectionOrder.map((section) => {
         const current = sectionStatus(state, section)
         const config = sectionConfigs[section]
-        return <RailItem key={section} label={config.label} status={current.status} reason={reasonFor(section, current)} waitingOn={current.waitingOn} current={currentSection === section} connector onClick={before.status === 'complete' ? () => go(routeForSection(state, section)) : undefined} substeps={config.parts.length > 1 ? config.parts.map((part,index) => ({ label: part.label, current: currentPart === index + 1 })) : []}/>
+        return <RailItem key={section} label={config.label} status={current.status} reason={reasonFor(section, current)} waitingOn={current.waitingOn} current={currentSection === section} connector onClick={before.status === 'complete' ? () => openSection(section) : undefined} substeps={config.parts.length > 1 ? config.parts.map((part,index) => ({ label: part.label, current: currentPart === index + 1 })) : []}/>
       })}
       <RailItem label="Review and sign" status={review.status} reason={review.reason} current={currentSection === 'review'} ready={review.status === 'complete'} onClick={review.status === 'locked' ? undefined : () => go('09-1-review')}/>
     </ol></nav>

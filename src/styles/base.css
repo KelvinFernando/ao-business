@@ -219,6 +219,7 @@ button.rail-label:hover { color: var(--color-primary); }
 .ready-list { padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
 .consent-intro { display: flex; flex-direction: column; gap: 8px; }
 .legal-placeholder { border: 1px dashed var(--color-grey500); }
+.tax-country-row { padding: 16px 0; border-top: 1px solid var(--color-divider); }
 .signer-invitation .alert { gap: 16px; padding: 20px 24px; border-radius: 8px; background: var(--color-grey050); }
 .signer-invitation .alert-body { font-size: 16px; line-height: 24px; }
 .screen-02-2-eligible > .icon-circle.large { width: 64px; height: 64px; flex-basis: 64px; }
@@ -464,6 +465,10 @@ button.rail-label:hover { color: var(--color-primary); }
 .data-table td { padding: 14px 16px; border-bottom: 1px solid var(--color-divider); vertical-align: top; }
 .data-table tr:last-child td { border-bottom: 0; }
 .data-table .selected { background: var(--color-primary-tint); }
+.starting-package-card { border-left: 4px solid var(--color-primary); gap: 8px; }
+.business-info-card { gap: 12px; }
+.compare-modal-table { overflow-x: auto; }
+.modal.compare-modal { width: 960px; max-width: calc(100vw - 64px); }
 .package-choice { display: flex; flex-direction: column; gap: 24px; }
 .package-choice-main { display: flex; flex-direction: column; gap: 12px; }
 .package-choice-main > h2 { color: var(--color-black); font-family: system-ui, sans-serif; font-size: 16px; line-height: 20px; }

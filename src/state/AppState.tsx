@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { REFERENCE } from '../config/placeholders'
+import { identityProvider } from '../identity/IdentityProvider'
 
 export type Overlay = 'help' | 'leave' | 'why' | 'remove-person' | null
 export type IdvResult = 'verified' | 'retry' | 'failed' | 'longer'
@@ -102,7 +103,8 @@ const freshState = (): DemoState => ({
   language: 'en',
   legalName: 'Boulangerie Laval inc.',
   employees: '6',
-  taxCountries: [{ country: 'Canada' }],
+  taxCountries: [{ country: 'Canada' }, { country: 'France', tin: '12 345 678 901' }],
+  usPerson: false,
   people: peopleWithOwnership(40),
   sections: sectionStates(),
   pendingAttention: [],
@@ -142,6 +144,7 @@ export function createDemoPreset(preset: DemoPreset): DemoState {
     ...base,
     package: 'digital',
     usPerson: false,
+    data: { ...base.data, lucPercent: 40, pep: 'No' },
     people: peopleWithOwnership(40),
     sections: sectionStates({
       before: { status: 'complete' },
@@ -216,6 +219,7 @@ export type AppAction =
   | { type: 'set-package'; value: PackageId }
   | { type: 'set-starting-package'; value: PackageId }
   | { type: 'set-section'; section: SectionId; value: SectionState }
+  | { type: 'resolve-attention'; section: SectionId }
   | { type: 'mark-saved'; at: string }
   | { type: 'replace'; state: DemoState }
   | { type: 'apply-preset'; preset: DemoPreset }
@@ -230,11 +234,14 @@ export function appReducer(state: DemoState, action: AppAction): DemoState {
       if (action.key === 'employees') return { ...next, employees: String(action.value) }
       if (action.key === 'accountLanguage' || action.key === 'preferredLanguage') return { ...next, language: action.value === 'Français' || action.value === 'fr' ? 'fr' : 'en' }
       if (action.key === 'usPerson') return { ...next, usPerson: action.value === true || action.value === 'Yes' }
+      if (action.key === 'taxCountries') return { ...next, taxCountries: action.value as { country: string; tin?: string }[] }
+      if (action.key === 'lucPercent') return { ...next, people: next.people.map((person) => person.id === 'luc' ? { ...person, ownership: Number(action.value) } : person) }
       return next
     }
     case 'set-package': return { ...state, package: action.value, dirty: true }
     case 'set-starting-package': return { ...state, startingPackage: action.value, dirty: true }
     case 'set-section': return { ...state, sections: { ...state.sections, [action.section]: action.value }, dirty: true }
+    case 'resolve-attention': return { ...state, pendingAttention: state.pendingAttention.filter((entry) => entry.section !== action.section), dirty: true }
     case 'mark-saved': return { ...state, dirty: false, lastSavedAt: action.at }
     case 'replace': return action.state
     case 'apply-preset': return createDemoPreset(action.preset)
@@ -268,6 +275,7 @@ interface AppContextValue {
   setPackage: (value: PackageId) => void
   setStartingPackage: (value: PackageId) => void
   setSection: (section: SectionId, value: SectionState) => void
+  resolveAttention: (section: SectionId) => void
   applyPreset: (preset: DemoPreset) => void
   go: (route: string, variant?: string) => void
   saveExit: () => void
@@ -306,6 +314,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const setPackage = useCallback((value: PackageId) => update({ type: 'set-package', value }), [update])
   const setStartingPackage = useCallback((value: PackageId) => update({ type: 'set-starting-package', value }), [update])
   const setSection = useCallback((section: SectionId, value: SectionState) => update({ type: 'set-section', section, value }), [update])
+  const resolveAttention = useCallback((section: SectionId) => update({ type: 'resolve-attention', section }), [update])
   const applyPreset = useCallback((preset: DemoPreset) => {
     checkpoint.current = createDemoPreset(preset)
     update({ type: 'apply-preset', preset })
@@ -347,9 +356,14 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const setSubmitFailNext = useCallback((value: boolean) => update({ type: 'set-submit-fail-next', value }), [update])
-  const setIdvResult = useCallback((value: IdvResult) => update({ type: 'set-idv-result', value }), [update])
+  const setIdvResult = useCallback((value: IdvResult) => {
+    const outcome = value === 'verified' ? 'passed' : value === 'retry' || value === 'failed' ? 'failed' : 'in_progress'
+    identityProvider.setOutcome('marie', outcome)
+    identityProvider.setOutcome('luc', outcome)
+    update({ type: 'set-idv-result', value })
+  }, [update])
 
-  const value = useMemo(() => ({ state, set, setPackage, setStartingPackage, setSection, applyPreset, go, saveExit, markSaved, discardChanges, reset, overlay, setOverlay, toast, showToast, setSubmitFailNext, setIdvResult }), [state, set, setPackage, setStartingPackage, setSection, applyPreset, go, saveExit, markSaved, discardChanges, reset, overlay, toast, showToast, setSubmitFailNext, setIdvResult])
+  const value = useMemo(() => ({ state, set, setPackage, setStartingPackage, setSection, resolveAttention, applyPreset, go, saveExit, markSaved, discardChanges, reset, overlay, setOverlay, toast, showToast, setSubmitFailNext, setIdvResult }), [state, set, setPackage, setStartingPackage, setSection, resolveAttention, applyPreset, go, saveExit, markSaved, discardChanges, reset, overlay, toast, showToast, setSubmitFailNext, setIdvResult])
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
 }
 
