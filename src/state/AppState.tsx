@@ -58,7 +58,7 @@ export interface DemoState extends AppModel {
 }
 
 const initialData: Record<string, unknown> = {
-  structure: 'Corporation', soleRegistered: 'Yes', ownerCount: 2, signerCount: 2,
+  structure: 'Corporation', businessRegistered: 'Yes', ownerCount: 2, signerCount: 2,
   ownersAllIndividuals: 'Yes', applicantIsOwnerSigner: 'Yes', signersAllOwners: 'Yes', all18: 'Yes', allInCanada: 'Yes',
   operatesInCanada: 'Yes', businessPurpose: 'Yes', onBehalf: 'No',
   legalBusinessName: 'Boulangerie Laval inc.', firstName: 'Marie', lastName: 'Tremblay', email: 'marie@boulangerielaval.ca', mobile: '(514) 555-0142',

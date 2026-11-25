@@ -930,3 +930,32 @@ button.rail-label:hover { color: var(--color-primary); }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .glass { background: rgba(255,255,255,.96); } }
 @media (prefers-reduced-transparency: reduce) { .glass { background: rgba(255,255,255,.98); backdrop-filter: none; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; } .spinner { animation: none; } }
+
+/* Team review changes (Nov 2026) */
+/* 9.1 Previously answered value: compact read-only row, not a confirmation card */
+.readonly-value { display: flex; align-items: flex-start; gap: 12px; padding: 0 0 16px; border-bottom: 1px solid var(--color-divider); }
+.readonly-value .grow { display: flex; flex-direction: column; gap: 2px; }
+.readonly-value strong { display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
+.readonly-value strong svg { color: var(--color-text-muted); flex: 0 0 auto; }
+/* 4.1 Correct the mobile number in place */
+.change-mobile { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
+/* 5.4 Single consent */
+.combined-consent { gap: 16px; }
+/* 11.3 Industry browser */
+.industry-browser { width: 640px; }
+.industry-breadcrumb { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; font-size: 14px; line-height: 20px; }
+.industry-breadcrumb > span { display: inline-flex; align-items: center; gap: 4px; }
+.industry-breadcrumb svg { color: var(--color-text-muted); }
+.industry-rows { display: flex; flex-direction: column; border: 1px solid var(--color-border); border-radius: 4px; overflow: hidden; }
+.industry-row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 12px 16px; border: 0; border-top: 1px solid var(--color-divider); background: var(--color-white); text-align: left; color: var(--color-text); cursor: pointer; }
+.industry-row:first-child { border-top: 0; }
+.industry-row:hover { background: var(--color-grey050); }
+.industry-row:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+.industry-row.selected { background: var(--color-primary-tint); }
+.industry-row .grow { display: flex; flex-direction: column; gap: 2px; }
+.industry-row strong { font-weight: 500; line-height: 22px; }
+.industry-row-level { font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--color-text-muted); }
+.industry-row-open { display: inline-flex; align-items: center; gap: 4px; flex: 0 0 auto; color: var(--color-primary); }
+/* 20.4 Correct another signer's contact details */
+.signer-contact-edit { display: flex; flex-direction: column; gap: 12px; padding-top: 16px; border-top: 1px solid var(--color-divider); }
+@media (max-width: 640px) { .industry-browser { width: auto; } }

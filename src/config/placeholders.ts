@@ -20,3 +20,8 @@ export const RETURN_LINK_LIFETIME = null // PLACEHOLDER — not specified, never
 export const REVERIFY_ON_RETURN = true
 export const SIGNER_REQUIRES_SIN = false // OQ-78: drawn answer is no
 export const INVITEE_CAN_EDIT_ENTERED_DETAILS = true // OQ-115: drawn answer includes Edit
+
+// Team review, prototype change list (Nov 2026). Flip a flag to compare the alternative.
+export const CHANGE_MOBILE_INLINE = true // 4.1 open question: correct the number on the verify screen instead of going back
+export const COMBINED_CONSENT = true // 5.4 pending Legal/Compliance: one checkbox instead of four
+export const APPLICANT_CAN_CORRECT_SIGNER_CONTACT = true // 20.4 pending NBC fraud/security approval
