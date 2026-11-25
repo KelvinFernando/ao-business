@@ -28,7 +28,7 @@ export const sectionConfigs: Record<ApplicationSectionId, SectionConfig> = {
   business: {
     label: 'Business',
     firstRoute: '04-1-business-details',
-    minutes: 5,
+    minutes: 6,
     parts: [
       { label: 'Business details', routes: ['04-0-find-business', '04-1-business-details'] },
       { label: 'Address', routes: ['04-2-address', '04-3-address-manual'] },
@@ -48,7 +48,7 @@ export const sectionConfigs: Record<ApplicationSectionId, SectionConfig> = {
   people: {
     label: 'Owners and signers',
     firstRoute: '05-1-people-under',
-    minutes: 3,
+    minutes: 4,
     parts: [
       { label: 'Owners and signers', routes: ['05-1-people-under', '05-1-people-exact', '05-1-people-over', '05-2-person'] },
       { label: 'Signing requirements', routes: ['05-3-signing'] },
@@ -57,7 +57,7 @@ export const sectionConfigs: Record<ApplicationSectionId, SectionConfig> = {
   you_id: {
     label: 'You and your ID',
     firstRoute: '06-0-personal-info',
-    minutes: 4,
+    minutes: 5,
     parts: [
       { label: 'About you', routes: ['06-0-personal-info'] },
       { label: 'Verify your identity', routes: ['06-1-idv-get-ready', '06-2-idv-phone-handoff', '06-3-idv-checking', '06-3b-idv-taking-longer', '06-4-idv-verified', '06-5-idv-try-again', '06-6-idv-another-way'] },

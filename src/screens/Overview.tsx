@@ -65,7 +65,7 @@ export function OverviewScreen() {
         const available = isSectionAvailable(state, section)
         const index = applicationSectionOrder.indexOf(section)
         const reason = available ? rowReason(section, current) : index === 0 ? 'Complete Before you apply first' : `Complete ${sectionConfigs[applicationSectionOrder[index - 1]].label} first`
-        return <AttentionRow key={section} title={sectionConfigs[section].label} reason={reason} status={available ? current.status : 'locked'} waitingOn={current.waitingOn} buttonLabel={available ? actionLabel(current.status) : undefined} onClick={available ? () => current.status === 'waiting' ? showToast(`Reminder sent to ${current.waitingOn?.[0] ?? 'signer'}`) : openSection(section) : undefined}/>
+        return <AttentionRow key={section} title={sectionConfigs[section].label} reason={reason} status={available ? current.status : 'locked'} waitingOn={current.waitingOn} buttonLabel={available ? actionLabel(current.status) : undefined} meta={available ? undefined : `About ${sectionConfigs[section].minutes} min`} onClick={available ? () => current.status === 'waiting' ? showToast(`Reminder sent to ${current.waitingOn?.[0] ?? 'signer'}`) : openSection(section) : undefined}/>
       })}</div>
     </section>}
     <WhoNeedsToAct rows={whoRows}/>

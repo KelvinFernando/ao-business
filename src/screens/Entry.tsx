@@ -3,6 +3,7 @@ import { CalendarDays, Check, ChevronDown, ChevronRight, Copy, CreditCard, FileC
 import { ActionBar, Alert, Badge, Button, Card, Checkbox, ChoiceTiles, ErrorSummary, Field, LinkButton, NumberStepper, OtpInput, YesNo } from '../components/ui'
 import { boolArray, chosenPackage, personMaskedPhone, text, useApp } from '../state/AppState'
 import { PackageSelector, PageHeader } from './shared'
+import { sectionConfigs } from '../flow/sections'
 import { CHANGE_MOBILE_INLINE, COMBINED_CONSENT, PACKAGE_PRICES } from '../config/placeholders'
 
 export function StartScreen() {
@@ -96,11 +97,11 @@ export function BeforeYouApplyScreen() {
     { title: 'Checks we’ll do', body: 'To confirm the business and the people behind it, we’ll check:', bullets: ['the business registry, to confirm the business exists and who runs it', 'your personal credit file, with a credit bureau', 'the business’s credit file, with a credit bureau'], legal: '{Bureau names, soft vs. hard inquiry, effect on credit score, retention.}', check: 'I authorize National Bank to do these checks.' },
   ]
   const sections = [
-    ['Business', 'Legal details, address, industry and documents', 5],
-    ['Package and services', `Confirm the ${chosenPackage(state) === 'hybrid' ? 'Hybrid' : chosenPackage(state) === 'premium' ? 'Premium' : 'Digital'} Package or choose another`, 3],
-    ['Owners and signers', 'Who owns the business and who can sign for it', 3],
-    ['You and your ID', 'Your details and a photo of your ID', 4],
-    ['Tax and declarations', 'Where the business pays tax, and a few declarations', 2],
+    ['Business', 'Legal details, address, industry and documents', sectionConfigs.business.minutes],
+    ['Package and services', `Confirm the ${chosenPackage(state) === 'hybrid' ? 'Hybrid' : chosenPackage(state) === 'premium' ? 'Premium' : 'Digital'} Package or choose another`, sectionConfigs.package.minutes],
+    ['Owners and signers', 'Who owns the business and who can sign for it', sectionConfigs.people.minutes],
+    ['You and your ID', 'Your details and a photo of your ID', sectionConfigs.you_id.minutes],
+    ['Tax and declarations', 'Where the business pays tax, and a few declarations', sectionConfigs.tax.minutes],
   ] as const
   const missing = checks.map((checked, index) => checked ? -1 : index).filter((index) => index >= 0)
   const update = (index: number, value: boolean) => set('consents', checks.map((checked, itemIndex) => itemIndex === index ? value : checked))

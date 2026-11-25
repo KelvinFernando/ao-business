@@ -41,8 +41,8 @@ export function NextStepCard({ title, description, buttonLabel, onClick }: { tit
   return <Card className="next-step-card"><div className="next-step-copy"><p className="eyebrow">YOUR NEXT STEP</p><h2>{title}</h2><p className="small muted">{description}</p></div><Button onClick={onClick}>{buttonLabel}</Button></Card>
 }
 
-export function AttentionRow({ title, reason, status, waitingOn, buttonLabel, onClick }: { title: string; reason: string; status: Status; waitingOn?: string[]; buttonLabel?: string; onClick?: () => void }) {
-  return <Card className="attention-row"><div className="attention-row-main"><StatusIcon status={status}/><div><h3>{title}</h3><p className="small muted">{statusWord(status, waitingOn)} · {reason}</p></div></div>{buttonLabel && onClick && <Button variant="secondary" onClick={onClick}>{buttonLabel}</Button>}</Card>
+export function AttentionRow({ title, reason, status, waitingOn, buttonLabel, onClick, meta }: { title: string; reason: string; status: Status; waitingOn?: string[]; buttonLabel?: string; onClick?: () => void; meta?: string }) {
+  return <Card className="attention-row"><div className="attention-row-main"><StatusIcon status={status}/><div><h3>{title}</h3><p className="small muted">{statusWord(status, waitingOn)} · {reason}</p></div></div>{buttonLabel && onClick ? <Button variant="secondary" onClick={onClick}>{buttonLabel}</Button> : meta && <span className="attention-row-meta small muted">{meta}</span>}</Card>
 }
 
 export function WhoNeedsToAct({ rows }: { rows: { name: string; description: string; action: string }[] }) {
